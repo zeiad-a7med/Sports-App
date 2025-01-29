@@ -1,0 +1,20 @@
+PODS:
+  - Kingfisher (7.12.0)
+  - ReachabilitySwift (5.2.4)
+
+DEPENDENCIES:
+  - Kingfisher (~> 7.0)
+  - ReachabilitySwift (~> 5.0)
+
+SPEC REPOS:
+  trunk:
+    - Kingfisher
+    - ReachabilitySwift
+
+SPEC CHECKSUMS:
+  Kingfisher: 53a10ea35051a436b5fb626ca2dd8f3144d755e9
+  ReachabilitySwift: 32793e867593cfc1177f5d16491e3a197d2fccda
+
+PODFILE CHECKSUM: 8906f8661ff2828be238a171455c4a7c73348065
+
+COCOAPODS: 1.16.2
