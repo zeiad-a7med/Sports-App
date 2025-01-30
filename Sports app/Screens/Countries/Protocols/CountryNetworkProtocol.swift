@@ -7,6 +7,6 @@
 
 protocol CountryNetworkProtocol {
     static func fetchCountriesFromAPI(
-        sportName: String, completionHandler: @escaping (CountryResult?) -> Void
+        sportType: SportType, completionHandler: @escaping (CountryResult?) -> Void
     )
 }

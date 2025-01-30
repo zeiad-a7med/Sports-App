@@ -6,5 +6,5 @@
 //
 import Foundation
 protocol CountryProtocol{
-    func renderToView(result : CountryResult)
+    func renderToView(result : CountryResult?)
 }

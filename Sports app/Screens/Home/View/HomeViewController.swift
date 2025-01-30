@@ -6,21 +6,33 @@
 //
 
 import UIKit
-
+import SVGKit
 class HomeViewController: UIViewController, UICollectionViewDelegate,
     UICollectionViewDataSource, UICollectionViewDelegateFlowLayout
 {
     @IBOutlet weak var myCollectionView: UICollectionView!
     var countriesList: [Country] = []
+    var sportsTypesList: [[SportType]] = [
+        [.football,.basketball],
+        [.tennis,.cricket]
+    ]
     override func viewDidLoad() {
         super.viewDidLoad()
         let nib = UINib(nibName: "SportCard", bundle: nil)
         self.myCollectionView.register(
             nib, forCellWithReuseIdentifier: "SportCard")
-        self.tabBarItem.title = "Sasports"
-
+        
+        let layer = CAGradientLayer()
+        layer.frame = view.bounds
+        let startColor = UIColor(red: 20/255, green: 152/255, blue: 133/255, alpha: 1).cgColor
+        let endColor = UIColor.black.cgColor
+        layer.colors = [startColor, endColor]
+        view.layer.insertSublayer(layer, at: 0)
+        
     }
-
+    override func viewWillAppear(_ animated: Bool) {
+        self.navigationItem.title = "Sports"
+    }
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 2
     }
@@ -37,8 +49,9 @@ class HomeViewController: UIViewController, UICollectionViewDelegate,
         let cell =
             collectionView.dequeueReusableCell(
                 withReuseIdentifier: "SportCard", for: indexPath) as! SportCard
-        cell.sportImage.image = UIImage(named: "basketball")
-        cell.sportTitle.text = "Sport\(indexPath.row)"
+        let selectedType = sportsTypesList[indexPath.section][indexPath.row]
+        cell.sportImage.image = UIImage(named: selectedType.rawValue)
+        cell.sportTitle.text = selectedType.rawValue.capitalized
         return cell
     }
     func collectionView(
@@ -65,7 +78,13 @@ class HomeViewController: UIViewController, UICollectionViewDelegate,
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        Router.goToCountriesPage(from: self, sportName: "football")
+        
+        if(sportsTypesList[indexPath.section][indexPath.row] == .cricket){
+            Router.goToLeaguesPage(from: self, sportType: sportsTypesList[indexPath.section][indexPath.row], countryId: nil)
+        }else{
+            Router.goToCountriesPage(from: self, sportType: sportsTypesList[indexPath.section][indexPath.row])
+        }
+        
     }
 
 }

@@ -17,7 +17,7 @@ class NetworkManager {
     static let instance = NetworkManager()
     var onNetworkRecovered : (()->()) = {}
     var onNetworkLost : (()->()) = {}
-    var isConnectedToNetwork : Bool?{
+    var isConnectedToNetwork : Bool{
         didSet {
             isConnectedToNetwork == true ?
             onNetworkRecovered() :
@@ -27,8 +27,10 @@ class NetworkManager {
     private init() {
         do {
             reachability = try Reachability()
+            isConnectedToNetwork = true
         } catch {
             print("Unable to create Reachability instance")
+            isConnectedToNetwork = false
         }
         
         self.reachability.whenReachable = { reachability in

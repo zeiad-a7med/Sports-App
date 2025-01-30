@@ -6,20 +6,28 @@
 //
 
 import Foundation
-class EndPoints{
+
+class EndPoints {
     static let baseUrl = "https://apiv2.allsportsapi.com/"
-    static let football = "\(baseUrl)football/?\(EndPointKey.apikey)\(Constants.API_KEY)"
-    static let basketball = "\(baseUrl)basketball/?\(EndPointKey.apikey)\(Constants.API_KEY)"
-    
-    static func getAllSports(targetSport: String) -> String {
+    static let football =
+        "\(baseUrl)football/?\(EndPointKey.apikey)\(Constants.API_KEY)"
+    static let basketball =
+        "\(baseUrl)basketball/?\(EndPointKey.apikey)\(Constants.API_KEY)"
+    static let cricket =
+        "\(baseUrl)cricket/?\(EndPointKey.apikey)\(Constants.API_KEY)"
+    static let tennis =
+        "\(baseUrl)tennis/?\(EndPointKey.apikey)\(Constants.API_KEY)"
+
+    static func getTargetSportEndPoint(targetSport: SportType) -> String {
         switch targetSport {
-        case "football":
+        case .football:
             return football
-        case "basketball":
+        case .basketball:
             return basketball
-        default:
-            return football
+        case .cricket:
+            return cricket
+        case .tennis:
+            return tennis
         }
     }
 }
-

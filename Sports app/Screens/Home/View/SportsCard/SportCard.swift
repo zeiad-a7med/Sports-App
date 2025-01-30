@@ -7,8 +7,6 @@
 
 import UIKit
 
-import UIKit
-
 class SportCard: UICollectionViewCell {
 
     @IBOutlet weak var sportCardView: UIView!
@@ -24,10 +22,11 @@ class SportCard: UICollectionViewCell {
         sportCardView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         sportCardView.frame = self.bounds
         
-        self.layer.cornerRadius = 10 
+        self.layer.cornerRadius = 35
         self.layer.masksToBounds = true
         
-        sportImage.contentMode = .scaleAspectFill
+        sportImage.contentMode = .scaleAspectFit
+        sportImage.backgroundColor = .clear
         sportImage.clipsToBounds = true
         sportImage.frame = sportImage.bounds
         sportImage.autoresizingMask = [.flexibleWidth, .flexibleHeight]

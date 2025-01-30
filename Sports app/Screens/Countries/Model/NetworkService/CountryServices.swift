@@ -9,10 +9,10 @@ import Foundation
 
 class CountryServices: CountryNetworkProtocol {
     static func fetchCountriesFromAPI(
-        sportName: String, completionHandler: @escaping (CountryResult?) -> Void
+        sportType: SportType, completionHandler: @escaping (CountryResult?) -> Void
     ) {
         
-        var targetEndPoint = EndPoints.getAllSports(targetSport: sportName)
+        let targetEndPoint = EndPoints.getTargetSportEndPoint(targetSport: sportType)
         let url = URL(
             string: targetEndPoint.appending(EndPointKey.met).appending(
                 "Countries"))
@@ -28,7 +28,9 @@ class CountryServices: CountryNetworkProtocol {
                 completionHandler(result)
             } catch {
                 print(error.localizedDescription)
-                completionHandler(nil)
+                let result = CountryResult()
+                result.success = 0
+                completionHandler(result)
             }
 
         }

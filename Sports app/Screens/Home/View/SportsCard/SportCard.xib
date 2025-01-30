@@ -4,33 +4,28 @@
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
-        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="gTV-IL-0wX" customClass="SportCard" customModule="Sports_app" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="138" height="141"/>
+            <rect key="frame" x="0.0" y="0.0" width="185" height="244"/>
             <autoresizingMask key="autoresizingMask"/>
             <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                <rect key="frame" x="0.0" y="0.0" width="138" height="141"/>
+                <rect key="frame" x="0.0" y="0.0" width="185" height="244"/>
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="IKE-Rx-mWa">
-                        <rect key="frame" x="0.0" y="0.0" width="138" height="141"/>
+                        <rect key="frame" x="0.0" y="0.0" width="185" height="244"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="tennis" translatesAutoresizingMaskIntoConstraints="NO" id="t1S-wa-Ukh">
-                                <rect key="frame" x="0.0" y="0.0" width="138" height="141"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                            </imageView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="RXV-hP-cce">
-                                <rect key="frame" x="0.0" y="91" width="138" height="50"/>
+                                <rect key="frame" x="0.0" y="194" width="185" height="50"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Sport" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LMF-Wi-Kuf">
                                         <rect key="frame" x="0.0" y="15" width="138" height="21"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <color key="textColor" systemColor="groupTableViewBackgroundColor"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                 </subviews>
@@ -41,8 +36,11 @@
                                     <constraint firstAttribute="height" constant="50" id="JWf-Bv-fcN"/>
                                 </constraints>
                             </view>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="football" translatesAutoresizingMaskIntoConstraints="NO" id="t1S-wa-Ukh">
+                                <rect key="frame" x="-5" y="-18" width="201" height="263"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </imageView>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBrownColor"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="RXV-hP-cce" secondAttribute="trailing" id="dPS-IK-pfX"/>
                             <constraint firstItem="RXV-hP-cce" firstAttribute="leading" secondItem="IKE-Rx-mWa" secondAttribute="leading" id="gxi-kl-Zrx"/>
@@ -58,23 +56,17 @@
                 <constraint firstAttribute="trailing" secondItem="IKE-Rx-mWa" secondAttribute="trailing" id="n1b-8d-UOc"/>
                 <constraint firstItem="IKE-Rx-mWa" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="pPV-RK-gtP"/>
             </constraints>
-            <size key="customSize" width="138" height="141"/>
+            <size key="customSize" width="185" height="244"/>
             <connections>
                 <outlet property="imageOverlay" destination="RXV-hP-cce" id="p30-KP-yDV"/>
                 <outlet property="sportCardView" destination="IKE-Rx-mWa" id="jHq-U9-Oxi"/>
                 <outlet property="sportImage" destination="t1S-wa-Ukh" id="muQ-mA-2LU"/>
                 <outlet property="sportTitle" destination="LMF-Wi-Kuf" id="ZjQ-z4-9O2"/>
             </connections>
-            <point key="canvasLocation" x="77.862595419847324" y="-38.380281690140848"/>
+            <point key="canvasLocation" x="113.74045801526717" y="-74.647887323943664"/>
         </collectionViewCell>
     </objects>
     <resources>
-        <image name="tennis" width="140" height="232"/>
-        <systemColor name="groupTableViewBackgroundColor">
-            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </systemColor>
-        <systemColor name="systemBrownColor">
-            <color red="0.63529411764705879" green="0.51764705882352946" blue="0.36862745098039218" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </systemColor>
+        <image name="football" width="300" height="401"/>
     </resources>
 </document>

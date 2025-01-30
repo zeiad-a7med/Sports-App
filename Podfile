@@ -8,5 +8,6 @@ target 'Sports app' do
   # Pods for Sports app
 	pod 'Kingfisher', '~> 7.0'
 	pod 'ReachabilitySwift', '~> 5.0'
+	pod 'SVGKit' , '3.0.0'
 
 end

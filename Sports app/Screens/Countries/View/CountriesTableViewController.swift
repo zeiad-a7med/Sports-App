@@ -6,49 +6,85 @@
 //
 
 import UIKit
-
+import Kingfisher
 class CountriesTableViewController: UITableViewController, CountryProtocol {
 
     var countries: [Country] = []
-    var sportName: String!
+    let presenter = CountryPresenter()
+    var sportType: SportType!
     var networkIndicator: UIActivityIndicatorView!
     var filteredcountries: [Country] = []
     var isSearchActive = false
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.navigationItem.title = sportName
+        let nib = UINib(nibName: "CountryTableViewCell", bundle: nil)
+        self.tableView.register(nib, forCellReuseIdentifier: "CountryTableViewCell")
+        
         setupNetworkProvider()
         setupSearchController()
-        let presenter = CountryPresenter()
         presenter.attachView(view: self)
-        
         networkIndicator = UIActivityIndicatorView(style: .large)
         networkIndicator.center = self.view.center
         self.view.addSubview(networkIndicator)
         networkIndicator.startAnimating()
-        presenter.getDataFromAPI(sportName: sportName)
-        
 
     }
-    
-    func setupNetworkProvider(){
+    override func viewWillAppear(_ animated: Bool) {
+        self.navigationItem.title = sportType.rawValue.capitalized
+        let gradientView = UIView(frame: self.view.bounds)
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.frame = gradientView.bounds
+
+        let startColor = UIColor(red: 20/255, green: 152/255, blue: 133/255, alpha: 1).cgColor
+        let endColor = UIColor.black.cgColor
+        gradientLayer.colors = [startColor, endColor]
+        gradientView.layer.insertSublayer(gradientLayer, at: 0)
+
+        tableView.backgroundView = gradientView
+    }
+
+
+    func setupNetworkProvider() {
+        if NetworkManager.instance.isConnectedToNetwork {
+            self.presenter.getDataFromAPI(sportType: sportType)
+        } else {
+            self.showNetworkErrorAlert()
+        }
         NetworkManager.instance.onNetworkRecovered = {
             print("recovered")
         }
         NetworkManager.instance.onNetworkLost = {
-            print("Lost")
+            self.showNetworkErrorAlert()
         }
     }
-    
-    
-    func renderToView(result: CountryResult) {
+
+    func renderToView(result: CountryResult?) {
         DispatchQueue.main.async {
-            self.countries = result.result ?? []
-            self.filteredcountries = self.countries
-            self.tableView.reloadData()
+            if result?.success == 1 {
+                self.countries = result?.result ?? []
+                self.filteredcountries = self.countries
+                self.tableView.reloadData()
+
+            } else {
+                self.showNetworkErrorAlert()
+            }
             self.networkIndicator.stopAnimating()
 
         }
+    }
+
+    func showNetworkErrorAlert() {
+        let alert = UIAlertController(
+            title: "Something went wrong",
+            message: "Please check your internet connection",
+            preferredStyle: .alert)
+        alert.addAction(
+            UIAlertAction(
+                title: "Ok", style: .default,
+                handler: { action in
+                    self.navigationController?.popViewController(animated: true)
+                }))
+        self.present(alert, animated: true)
     }
 
     // MARK: - Table view data source
@@ -65,14 +101,36 @@ class CountriesTableViewController: UITableViewController, CountryProtocol {
         return filteredcountries.count
     }
 
-    
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "countryCell", for: indexPath)
-
-        cell.textLabel?.text = filteredcountries[indexPath.row].countryName ?? ""
+    override func tableView(
+        _ tableView: UITableView, cellForRowAt indexPath: IndexPath
+    ) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(
+            withIdentifier: "CountryTableViewCell", for: indexPath) as! CountryTableViewCell
+        cell.countrylabel.text = filteredcountries[indexPath.row].countryName
+        
+        let countryLogo = filteredcountries[indexPath.row].countryLogo
+        if(countryLogo != nil){
+            if let imageUrl = URL(string: countryLogo!) {
+                cell.countryImage.kf.setImage(with: imageUrl)
+            } else {
+                cell.countryImage.image = UIImage(named: sportType.rawValue)
+            }
+        }else{
+            cell.countryImage.image = UIImage(named: sportType.rawValue)
+        }
+        
         return cell
     }
-    
+    override func tableView(
+        _ tableView: UITableView, didSelectRowAt indexPath: IndexPath
+    ) {
+        Router.goToLeaguesPage(
+            from: self, sportType: sportType,
+            countryId: filteredcountries[indexPath.row].countrykey!)
+    }
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 120
+    }
 
     /*
     // Override to support conditional editing of the table view.
@@ -120,14 +178,21 @@ class CountriesTableViewController: UITableViewController, CountryProtocol {
     */
 
 }
-extension CountriesTableViewController: UISearchResultsUpdating, UISearchBarDelegate {
+extension CountriesTableViewController: UISearchResultsUpdating,
+    UISearchBarDelegate
+{
 
     func setupSearchController() {
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
         searchController.searchBar.delegate = self
         searchController.obscuresBackgroundDuringPresentation = false
-        searchController.searchBar.placeholder = "Search for Country"
+        if(sportType == .tennis){
+            searchController.searchBar.placeholder = "Search for Tournaments Types"
+        }else{
+            searchController.searchBar.placeholder = "Search for Country"
+        }
+        
 
         // Attach the search bar to the navigation bar
         navigationItem.searchController = searchController
@@ -136,7 +201,9 @@ extension CountriesTableViewController: UISearchResultsUpdating, UISearchBarDele
 
     // Update search results
     func updateSearchResults(for searchController: UISearchController) {
-        guard let searchText = searchController.searchBar.text, !searchText.isEmpty else {
+        guard let searchText = searchController.searchBar.text,
+            !searchText.isEmpty
+        else {
             isSearchActive = false
             filteredcountries = countries
             tableView.reloadData()
@@ -144,7 +211,9 @@ extension CountriesTableViewController: UISearchResultsUpdating, UISearchBarDele
         }
 
         isSearchActive = true
-        filteredcountries = countries.filter { $0.countryName!.lowercased().contains(searchText.lowercased()) }
+        filteredcountries = countries.filter {
+            $0.countryName!.lowercased().contains(searchText.lowercased())
+        }
         tableView.reloadData()
     }
 
