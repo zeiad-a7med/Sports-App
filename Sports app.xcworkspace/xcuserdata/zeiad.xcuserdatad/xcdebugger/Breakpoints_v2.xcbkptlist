@@ -478,8 +478,8 @@
             filePath = "Sports app/Screens/Fixtures/View/FixturesCollectionViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "314"
-            endingLineNumber = "314"
+            startingLineNumber = "338"
+            endingLineNumber = "338"
             landmarkName = "buildEventCell(indexPath:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -494,8 +494,8 @@
             filePath = "Sports app/Screens/Fixtures/View/FixturesCollectionViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "83"
-            endingLineNumber = "83"
+            startingLineNumber = "107"
+            endingLineNumber = "107"
             landmarkName = "renderToView(result:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -510,8 +510,8 @@
             filePath = "Sports app/Screens/Fixtures/View/FixturesCollectionViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "82"
-            endingLineNumber = "82"
+            startingLineNumber = "106"
+            endingLineNumber = "106"
             landmarkName = "renderToView(result:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -526,9 +526,9 @@
             filePath = "Sports app/Screens/Fixtures/View/FixturesCollectionViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "87"
-            endingLineNumber = "87"
-            landmarkName = "renderTeamsToView(result:)"
+            startingLineNumber = "111"
+            endingLineNumber = "111"
+            landmarkName = "renderToView(result:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -542,8 +542,8 @@
             filePath = "Sports app/Screens/Fixtures/View/FixturesCollectionViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "84"
-            endingLineNumber = "84"
+            startingLineNumber = "108"
+            endingLineNumber = "108"
             landmarkName = "renderToView(result:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -593,6 +593,22 @@
             startingLineNumber = "36"
             endingLineNumber = "36"
             landmarkName = "fetchFixturesFromAPI(sportType:league:completionHandler:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "2585AD6C-8BBB-4C1D-9BCB-3E9B366CFE1A"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Sports app/Screens/Leagues/View/LeaguesTableViewController.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "170"
+            endingLineNumber = "170"
+            landmarkName = "addToFavorites(at:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

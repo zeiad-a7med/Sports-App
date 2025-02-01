@@ -5,7 +5,7 @@
 //  Created by Zeiad on 29/01/2025.
 //
 import Foundation
-enum SportType: String {
+enum SportType: String, CaseIterable {
     case football
     case basketball
     case tennis

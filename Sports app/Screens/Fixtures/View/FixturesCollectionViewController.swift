@@ -21,6 +21,11 @@ class FixturesCollectionViewController: UICollectionViewController,
     var league: League!
     let sectionTitles = ["Upcoming Events", "Latest Events", "Upcoming Events"]
     var networkIndicator: UIActivityIndicatorView!
+    var isFavorite = false
+    
+    
+
+
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionView.register(
@@ -39,6 +44,25 @@ class FixturesCollectionViewController: UICollectionViewController,
         networkIndicator.center = self.view.center
         self.view.addSubview(networkIndicator)
         networkIndicator.startAnimating()
+        isFavorite = UserDefaults.standard.bool(forKey: "\(league.leaguekey!)")
+        updateFavoriteButton()
+
+    }
+    func updateFavoriteButton() {
+        let imageName = isFavorite ? "heart.fill" : "heart"
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: imageName),
+            style: .plain,
+            target: self,
+            action: #selector(favoriteTapped)
+        )
+    }
+
+
+    @objc func favoriteTapped() {
+        isFavorite.toggle()
+        UserDefaults.standard.set(isFavorite, forKey: "\(league.leaguekey!)")
+        updateFavoriteButton()
     }
     override func viewWillAppear(_ animated: Bool) {
         self.navigationItem.title = league.leagueName

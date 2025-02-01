@@ -68,7 +68,6 @@
                     <tabBarItem key="tabBarItem" title="Sports" image="sportscourt.fill" catalog="system" id="elV-DI-AXR">
                         <color key="badgeColor" systemColor="systemBrownColor"/>
                     </tabBarItem>
-                    <navigationItem key="navigationItem" title="Sports" id="E3T-xI-Fzv"/>
                     <connections>
                         <outlet property="myCollectionView" destination="vhc-sO-f7e" id="i4v-zc-XMM"/>
                     </connections>
@@ -76,6 +75,36 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1985.0746268656715" y="-2.7459954233409607"/>
+        </scene>
+        <!--favorites-->
+        <scene sceneID="hON-vk-MB0">
+            <objects>
+                <tableViewController id="LHh-3W-Whz" customClass="FavoriteLeaguesTableViewController" customModule="Sports_app" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" id="qjL-e3-H5y">
+                        <rect key="frame" x="0.0" y="0.0" width="402" height="874"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="x03-w6-gQ2">
+                                <rect key="frame" x="0.0" y="50" width="402" height="47.666667938232422"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="x03-w6-gQ2" id="Jsm-dc-BBb">
+                                    <rect key="frame" x="0.0" y="0.0" width="402" height="47.666667938232422"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </tableViewCellContentView>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="LHh-3W-Whz" id="Wg9-az-bxf"/>
+                            <outlet property="delegate" destination="LHh-3W-Whz" id="OM0-ry-30i"/>
+                        </connections>
+                    </tableView>
+                    <tabBarItem key="tabBarItem" title="favorites" image="star.fill" catalog="system" id="QMi-9K-H6T"/>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="FBE-KG-hhN" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="942" y="748"/>
         </scene>
         <!--Countries Table View Controller-->
         <scene sceneID="Ez6-SL-KmT">
@@ -128,7 +157,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="zI0-Ti-pjt" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="273" y="-3"/>
+            <point key="canvasLocation" x="-110" y="-3"/>
         </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="TcV-fR-DJF">
@@ -144,11 +173,12 @@
                     </tabBar>
                     <connections>
                         <segue destination="BYZ-38-t0r" kind="relationship" relationship="viewControllers" id="ahW-PY-I92"/>
+                        <segue destination="LHh-3W-Whz" kind="relationship" relationship="viewControllers" id="iy7-DC-oC9"/>
                     </connections>
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="uTB-Ij-Rwh" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1065.6716417910447" y="-2.7459954233409607"/>
+            <point key="canvasLocation" x="943" y="-3"/>
         </scene>
         <!--Leagues Table View Controller-->
         <scene sceneID="35O-D4-z3Q">
@@ -244,17 +274,18 @@
     <resources>
         <image name="header" width="447" height="165"/>
         <image name="sportscourt.fill" catalog="system" width="128" height="83"/>
+        <image name="star.fill" catalog="system" width="128" height="116"/>
         <systemColor name="labelColor">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="placeholderTextColor">
-            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.29803921568627451" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.29803921570000003" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemBrownColor">
-            <color red="0.63529411764705879" green="0.51764705882352946" blue="0.36862745098039218" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.63529411759999999" green="0.51764705879999995" blue="0.36862745099999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

@@ -7,13 +7,10 @@
 
 import UIKit
 
-class LeaguesTableViewController: UITableViewController, LeagueProtocol {
+class FavoriteLeaguesTableViewController: UITableViewController{
 
     var leagues: [League] = []
     let presenter = LeaguePresenter()
-    var sportType: SportType!
-    var countryId: Int?
-    var networkIndicator: UIActivityIndicatorView!
     var filteredLeagues: [League] = []
     var isSearchActive = false
     override func viewDidLoad() {
@@ -21,55 +18,30 @@ class LeaguesTableViewController: UITableViewController, LeagueProtocol {
         let nib = UINib(nibName: "LeagueTableViewCell", bundle: nil)
         self.tableView.register(
             nib, forCellReuseIdentifier: "LeagueTableViewCell")
-        setupNetworkProvider()
-        setupSearchController()
-        self.navigationItem.title = sportType.rawValue
-        presenter.attachView(view: self)
-        networkIndicator = UIActivityIndicatorView(style: .large)
-        networkIndicator.center = self.view.center
-        self.view.addSubview(networkIndicator)
-        networkIndicator.startAnimating()
-
-    }
-    override func viewWillAppear(_ animated: Bool) {
-        self.navigationItem.title = "Leagues"
-
         let gradientView = UIView(frame: self.view.bounds)
         let gradientLayer = CAGradientLayer()
         gradientLayer.frame = gradientView.bounds
         gradientLayer.colors = ThemeManager.gradientColors
         gradientView.layer.insertSublayer(gradientLayer, at: 0)
-
         tableView.backgroundView = gradientView
+        setupSearchController()
+        
+        
+    }
+    override func viewWillAppear(_ animated: Bool) {
+        loadData()
+//        self.navigationItem.title = "Favorite Leagues"
+        
     }
 
-    func setupNetworkProvider() {
-        if NetworkManager.instance.isConnectedToNetwork {
-            self.presenter.getDataFromAPI(
-                sportType: sportType, countryId: countryId)
-        } else {
-            self.showNetworkErrorAlert()
-        }
-        NetworkManager.instance.onNetworkRecovered = {
-            print("recovered")
-        }
-        NetworkManager.instance.onNetworkLost = {
-            self.showNetworkErrorAlert()
-        }
-    }
-
-    func renderToView(result: LeagueResult?) {
-        DispatchQueue.main.async {
-            if result?.success == 1 {
-                self.leagues = result?.result ?? []
-                self.filteredLeagues = self.leagues
+    func loadData() {
+        let response = DBManager.shared.getFavoriteLeaguesFromLocalDB()
+        if response.success{
+            DispatchQueue.main.async {
+                self.filteredLeagues = response.data as? [League] ?? []
                 self.tableView.reloadData()
-
-            } else {
-                self.showNetworkErrorAlert()
             }
-            self.networkIndicator.stopAnimating()
-
+            
         }
     }
 
@@ -115,10 +87,10 @@ class LeaguesTableViewController: UITableViewController, LeagueProtocol {
             if let imageUrl = URL(string: league.leagueLogo!) {
                 cell.leagueImage.kf.setImage(with: imageUrl)
             } else {
-                cell.leagueImage.image = UIImage(named: sportType.rawValue)
+                cell.leagueImage.image = UIImage(named: league.sportType ?? SportType.football.rawValue)
             }
         } else {
-            cell.leagueImage.image = UIImage(named: sportType.rawValue)
+            cell.leagueImage.image = UIImage(named: league.sportType ?? SportType.football.rawValue)
         }
 
         return cell
@@ -132,7 +104,7 @@ class LeaguesTableViewController: UITableViewController, LeagueProtocol {
         _ tableView: UITableView, didSelectRowAt indexPath: IndexPath
     ) {
         Router.goToFixturesPage(
-            from: self, sportType: sportType,
+            from: self, sportType:  SportType.allCases.first{$0.rawValue == filteredLeagues[indexPath.row].sportType} ?? .football,
             league: filteredLeagues[indexPath.row])
     }
     /*
@@ -143,36 +115,18 @@ class LeaguesTableViewController: UITableViewController, LeagueProtocol {
     }
     */
 
-    
+    /*
     // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView,
-                            leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        
-        // Create the action
-        let favoriteAction = UIContextualAction(style: .normal, title: "Favorite") { action, view, completionHandler in
-            // Handle adding to favorites
-            self.addToFavorites(at: indexPath)
-            completionHandler(true)
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            // Delete the row from the data source
+            tableView.deleteRows(at: [indexPath], with: .fade)
+        } else if editingStyle == .insert {
+            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
         }
-        
-        // Customize the action (e.g., change background color)
-        favoriteAction.backgroundColor = .systemCyan
-        favoriteAction.image = UIImage(systemName: "star.fill")
-        
-        // Return the swipe configuration with the action
-        return UISwipeActionsConfiguration(actions: [favoriteAction])
     }
+    */
 
-    // Example function to handle adding to favorites
-    func addToFavorites(at indexPath: IndexPath) {
-        var item = filteredLeagues[indexPath.row] // Replace `data` with your actual data source
-        item.sportType = sportType.rawValue
-        let result = DBManager.shared.addLeagueToLocalDB(league: item)
-        if result?.success ?? false {
-            print(result?.message ?? "okkaay")
-        }
-        // Update your data model and UI accordingly
-    }
     /*
     // Override to support rearranging the table view.
     override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
@@ -199,20 +153,20 @@ class LeaguesTableViewController: UITableViewController, LeagueProtocol {
     */
 
 }
-extension LeaguesTableViewController: UISearchResultsUpdating,
+extension FavoriteLeaguesTableViewController: UISearchResultsUpdating,
     UISearchBarDelegate
 {
 
     func setupSearchController() {
         let searchController = UISearchController(searchResultsController: nil)
-        searchController.searchResultsUpdater = self
-        searchController.searchBar.delegate = self
-        searchController.obscuresBackgroundDuringPresentation = false
-        searchController.searchBar.placeholder = "Search for league"
+            searchController.searchResultsUpdater = self
+            searchController.searchBar.delegate = self
+            searchController.obscuresBackgroundDuringPresentation = false
+            searchController.searchBar.placeholder = "Search for league"
 
-        // Attach the search bar to the navigation bar
-        navigationItem.searchController = searchController
-        definesPresentationContext = true
+            // Use navigationItem instead
+            navigationItem.searchController = searchController
+            definesPresentationContext = true
     }
 
     // Update search results
