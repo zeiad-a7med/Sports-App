@@ -14,6 +14,7 @@ class EndPointKey{
     static let timezone = "&timezone="
     static let countryId = "&countryId="
     static let matchId = "&matchId="
+    static let leagueId = "&leagueId="
     static let teamId = "&teamId="
     static let withPlayerStats = "&withPlayerStats="
 }

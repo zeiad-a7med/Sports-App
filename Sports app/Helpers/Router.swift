@@ -35,10 +35,30 @@ class Router {
         leaguesVC.countryId = countryId
         from.navigationController?.pushViewController(leaguesVC, animated: true)
     }
+    static func goToFixturesPage(
+        from: UIViewController, sportType: SportType, league: League
+    ) {
+//        let fixturesVC =
+//            from.storyboard?.instantiateViewController(
+//                identifier: RouteString.FixturesPage)
+//            as! FixturesTableViewController
+//        fixturesVC.sportType = sportType
+//        fixturesVC.league = league
+//        from.navigationController?.pushViewController(fixturesVC, animated: true)
+        let fixturesVC =
+            from.storyboard?.instantiateViewController(
+                identifier: RouteString.FixturesPage)
+            as! FixturesCollectionViewController
+                fixturesVC.sportType = sportType
+                fixturesVC.league = league
+        from.navigationController?.pushViewController(fixturesVC, animated: true)
+        
+    }
 }
 
 class RouteString {
     static let HomePage = "home"
     static let CountriesPage = "countries"
     static let LeaguesPage = "leagues"
+    static let FixturesPage = "fixtures"
 }

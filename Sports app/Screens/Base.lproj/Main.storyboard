@@ -17,9 +17,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="402" height="874"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="vhc-sO-f7e">
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="vhc-sO-f7e">
                                 <rect key="frame" x="0.0" y="147" width="402" height="616"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" red="0.078431372549019607" green="0.59607843137254901" blue="0.52156862745098043" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="oDe-o4-nb3">
                                     <size key="itemSize" width="128" height="128"/>
@@ -54,7 +53,11 @@
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <constraints>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="vhc-sO-f7e" secondAttribute="bottom" constant="28" id="0Jt-Uo-QlQ"/>
+                            <constraint firstItem="vhc-sO-f7e" firstAttribute="top" secondItem="HRH-12-ebS" secondAttribute="bottom" constant="38" id="CND-Rw-tLq"/>
                             <constraint firstItem="HRH-12-ebS" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" constant="75" id="DRp-PE-FBl"/>
+                            <constraint firstItem="vhc-sO-f7e" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="Eey-dw-XF4"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="vhc-sO-f7e" secondAttribute="trailing" id="GWW-up-U74"/>
                             <constraint firstItem="G3F-lz-OjU" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="KDq-l9-cET"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="HRH-12-ebS" secondAttribute="trailing" id="N6N-mO-d3p"/>
                             <constraint firstItem="HRH-12-ebS" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="Z2R-MW-rPH"/>
@@ -175,6 +178,68 @@
             </objects>
             <point key="canvasLocation" x="3693" y="12"/>
         </scene>
+        <!--Fixtures Table View Controller-->
+        <scene sceneID="YPR-u2-gaz">
+            <objects>
+                <tableViewController storyboardIdentifier="fixturess" id="XkQ-Cy-16G" customClass="FixturesTableViewController" customModule="Sports_app" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" id="Zia-ES-Gzs">
+                        <rect key="frame" x="0.0" y="0.0" width="402" height="874"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="cell" id="loQ-Rw-yFW">
+                                <rect key="frame" x="0.0" y="50" width="402" height="47.666667938232422"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="loQ-Rw-yFW" id="7Ih-uV-nEF">
+                                    <rect key="frame" x="0.0" y="0.0" width="402" height="47.666667938232422"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="XkQ-Cy-16G" id="IjN-0D-SFd"/>
+                            <outlet property="delegate" destination="XkQ-Cy-16G" id="lzA-Bi-bhn"/>
+                        </connections>
+                    </tableView>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Dxo-uM-t29" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="4490" y="19"/>
+        </scene>
+        <!--Fixtures Collection View Controller-->
+        <scene sceneID="syd-dB-Edg">
+            <objects>
+                <collectionViewController storyboardIdentifier="fixtures" id="U6s-Ve-4z5" customClass="FixturesCollectionViewController" customModule="Sports_app" customModuleProvider="target" sceneMemberID="viewController">
+                    <collectionView key="view" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" id="3HS-Zu-xVW">
+                        <rect key="frame" x="0.0" y="0.0" width="402" height="874"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="YR5-Fy-9id">
+                            <size key="itemSize" width="128" height="128"/>
+                            <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                            <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                            <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                        </collectionViewFlowLayout>
+                        <cells>
+                            <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="C8c-9z-8ET">
+                                <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="URi-UV-W4q">
+                                    <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </collectionViewCellContentView>
+                            </collectionViewCell>
+                        </cells>
+                        <connections>
+                            <outlet property="dataSource" destination="U6s-Ve-4z5" id="rWi-lj-tCe"/>
+                            <outlet property="delegate" destination="U6s-Ve-4z5" id="1eh-EZ-U4v"/>
+                        </connections>
+                    </collectionView>
+                </collectionViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="kkj-4R-ghQ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="5218" y="12"/>
+        </scene>
     </scenes>
     <resources>
         <image name="header" width="447" height="165"/>
@@ -183,13 +248,13 @@
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="placeholderTextColor">
-            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.29803921570000003" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.29803921568627451" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemBrownColor">
-            <color red="0.63529411759999999" green="0.51764705879999995" blue="0.36862745099999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.63529411764705879" green="0.51764705882352946" blue="0.36862745098039218" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

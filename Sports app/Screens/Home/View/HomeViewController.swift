@@ -24,10 +24,9 @@ class HomeViewController: UIViewController, UICollectionViewDelegate,
         
         let layer = CAGradientLayer()
         layer.frame = view.bounds
-        let startColor = UIColor(red: 20/255, green: 152/255, blue: 133/255, alpha: 1).cgColor
-        let endColor = UIColor.black.cgColor
-        layer.colors = [startColor, endColor]
+        layer.colors = ThemeManager.gradientColors
         view.layer.insertSublayer(layer, at: 0)
+        
         
     }
     override func viewWillAppear(_ animated: Bool) {

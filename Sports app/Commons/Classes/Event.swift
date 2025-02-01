@@ -40,7 +40,7 @@ struct Event: Codable {
 //    let substitutes: [Substitute]?
     let cards: [Card]?
 //    let vars: Vars?
-    let lineups: Lineups?
+//    let lineups: Lineups?
     let statistics: [Statistic]?
 //    let playerStats: PlayerStats?
 
@@ -79,8 +79,50 @@ struct Event: Codable {
 //        case substitutes = "substitutes"
         case cards = "cards"
 //        case vars = "vars"
-        case lineups = "lineups"
+//        case lineups = "lineups"
         case statistics = "statistics"
 //        case playerStats = "player_stats"
     }
+    
+    
+    func getStatus() -> EventStatus {
+        
+        let currentDate = Date()
+            let dateFormatter = DateFormatter()
+            
+            // Set date format for eventDate (assuming format: "yyyy-MM-dd")
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            guard let datePart = eventDate, let parsedDate = dateFormatter.date(from: datePart) else {
+                return .notStarted
+            }
+            
+            // Set time format for eventTime (assuming format: "HH:mm")
+            dateFormatter.dateFormat = "HH:mm"
+            guard let timePart = eventTime, let parsedTime = dateFormatter.date(from: timePart) else {
+                return .notStarted
+            }
+
+            // Combine eventDate and eventTime into a single Date object
+            let calendar = Calendar.current
+            let eventDateTime = calendar.date(bySettingHour: calendar.component(.hour, from: parsedTime),
+                                              minute: calendar.component(.minute, from: parsedTime),
+                                              second: 0,
+                                              of: parsedDate) ?? parsedDate
+            
+            // Compare with current date
+            if eventDateTime < currentDate {
+                return .finished
+            } else if eventLive == "1" || calendar.isDate(eventDateTime, equalTo: currentDate, toGranularity: .minute) {
+                return .live
+            } else {
+                return .notStarted
+            }
+    }
+    
+}
+
+enum EventStatus : String{
+    case notStarted = "Not Started"
+    case live = "Live"
+    case finished = "Finished"
 }

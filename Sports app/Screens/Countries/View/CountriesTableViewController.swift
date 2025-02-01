@@ -31,15 +31,13 @@ class CountriesTableViewController: UITableViewController, CountryProtocol {
     }
     override func viewWillAppear(_ animated: Bool) {
         self.navigationItem.title = sportType.rawValue.capitalized
+        
         let gradientView = UIView(frame: self.view.bounds)
         let gradientLayer = CAGradientLayer()
         gradientLayer.frame = gradientView.bounds
-
-        let startColor = UIColor(red: 20/255, green: 152/255, blue: 133/255, alpha: 1).cgColor
-        let endColor = UIColor.black.cgColor
-        gradientLayer.colors = [startColor, endColor]
+        gradientLayer.colors = ThemeManager.gradientColors
         gradientView.layer.insertSublayer(gradientLayer, at: 0)
-
+        
         tableView.backgroundView = gradientView
     }
 

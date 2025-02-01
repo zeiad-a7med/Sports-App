@@ -19,7 +19,8 @@ class LeaguesTableViewController: UITableViewController, LeagueProtocol {
     override func viewDidLoad() {
         super.viewDidLoad()
         let nib = UINib(nibName: "LeagueTableViewCell", bundle: nil)
-        self.tableView.register(nib, forCellReuseIdentifier: "LeagueTableViewCell")
+        self.tableView.register(
+            nib, forCellReuseIdentifier: "LeagueTableViewCell")
         setupNetworkProvider()
         setupSearchController()
         self.navigationItem.title = sportType.rawValue
@@ -32,23 +33,21 @@ class LeaguesTableViewController: UITableViewController, LeagueProtocol {
     }
     override func viewWillAppear(_ animated: Bool) {
         self.navigationItem.title = "Leagues"
+
         let gradientView = UIView(frame: self.view.bounds)
         let gradientLayer = CAGradientLayer()
         gradientLayer.frame = gradientView.bounds
-
-        let startColor = UIColor(red: 20/255, green: 152/255, blue: 133/255, alpha: 1).cgColor
-        let endColor = UIColor.black.cgColor
-        gradientLayer.colors = [startColor, endColor]
+        gradientLayer.colors = ThemeManager.gradientColors
         gradientView.layer.insertSublayer(gradientLayer, at: 0)
 
         tableView.backgroundView = gradientView
-        
     }
 
     func setupNetworkProvider() {
-        if(NetworkManager.instance.isConnectedToNetwork){
-            self.presenter.getDataFromAPI(sportType: sportType,countryId: countryId)
-        }else{
+        if NetworkManager.instance.isConnectedToNetwork {
+            self.presenter.getDataFromAPI(
+                sportType: sportType, countryId: countryId)
+        } else {
             self.showNetworkErrorAlert()
         }
         NetworkManager.instance.onNetworkRecovered = {
@@ -73,16 +72,18 @@ class LeaguesTableViewController: UITableViewController, LeagueProtocol {
 
         }
     }
-    
-    
-    func showNetworkErrorAlert(){
+
+    func showNetworkErrorAlert() {
         let alert = UIAlertController(
             title: "Something went wrong",
             message: "Please check your internet connection",
             preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Ok", style: .default,handler: { action in
-            self.navigationController?.popViewController(animated: true)
-        }))
+        alert.addAction(
+            UIAlertAction(
+                title: "Ok", style: .default,
+                handler: { action in
+                    self.navigationController?.popViewController(animated: true)
+                }))
         self.present(alert, animated: true)
     }
 
@@ -103,25 +104,36 @@ class LeaguesTableViewController: UITableViewController, LeagueProtocol {
     override func tableView(
         _ tableView: UITableView, cellForRowAt indexPath: IndexPath
     ) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(
-            withIdentifier: "LeagueTableViewCell", for: indexPath) as! LeagueTableViewCell
-        
+        let cell =
+            tableView.dequeueReusableCell(
+                withIdentifier: "LeagueTableViewCell", for: indexPath)
+            as! LeagueTableViewCell
+
         let league = filteredLeagues[indexPath.row]
         cell.leaguelabel.text = league.leagueName
-        if(league.leagueLogo != nil){
+        if league.leagueLogo != nil {
             if let imageUrl = URL(string: league.leagueLogo!) {
                 cell.leagueImage.kf.setImage(with: imageUrl)
-            }else{
+            } else {
                 cell.leagueImage.image = UIImage(named: sportType.rawValue)
             }
-        }else{
+        } else {
             cell.leagueImage.image = UIImage(named: sportType.rawValue)
         }
-        
+
         return cell
     }
-    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+    override func tableView(
+        _ tableView: UITableView, heightForRowAt indexPath: IndexPath
+    ) -> CGFloat {
         return 120
+    }
+    override func tableView(
+        _ tableView: UITableView, didSelectRowAt indexPath: IndexPath
+    ) {
+        Router.goToFixturesPage(
+            from: self, sportType: sportType,
+            league: filteredLeagues[indexPath.row])
     }
     /*
     // Override to support conditional editing of the table view.

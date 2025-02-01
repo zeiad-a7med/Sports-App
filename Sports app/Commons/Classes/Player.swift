@@ -7,17 +7,26 @@
 
 import Foundation
 struct Player: Codable {
-    let player: String?
-    let playerNumber: Int?
-    let playerPosition: Int?
+    let playerkey: Int?
+    let playerImage: String?
+    let playerName: String?
+    let playerNumber: String?
     let playerCountry: String?
-    let playerKey: Int?
+    let playerType: String?
+    let playerAge: String?
+    let playerMatchPlayed: String?
+    let playerBirthdate: String?
 
     enum CodingKeys: String, CodingKey {
-        case player
+        case playerkey = "player_key"
+        case playerImage = "player_image"
+        case playerName = "player_name"
         case playerNumber = "player_number"
-        case playerPosition = "player_position"
         case playerCountry = "player_country"
-        case playerKey = "player_key"
+        case playerType = "player_type"
+        case playerAge = "player_age"
+        case playerMatchPlayed = "player_match_played"
+        case playerBirthdate = "player_birthdate"
     }
 }
+                   
