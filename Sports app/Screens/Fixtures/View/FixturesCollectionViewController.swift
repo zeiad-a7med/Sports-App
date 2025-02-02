@@ -23,9 +23,6 @@ class FixturesCollectionViewController: UICollectionViewController,
     var networkIndicator: UIActivityIndicatorView!
     var isFavorite = false
     
-    
-
-
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionView.register(
@@ -48,6 +45,35 @@ class FixturesCollectionViewController: UICollectionViewController,
         updateFavoriteButton()
 
     }
+    override func viewWillAppear(_ animated: Bool) {
+        self.navigationItem.title = league.leagueName
+        navigationController?.setNavigationBarHidden(false, animated: true)
+        let gradientView = UIView(frame: self.view.bounds)
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.frame = gradientView.bounds
+        gradientLayer.colors = ThemeManager.gradientColors
+        gradientView.layer.insertSublayer(gradientLayer, at: 0)
+
+        self.collectionView.backgroundView = gradientView
+    }
+    
+    
+
+    @objc func favoriteTapped() {
+        isFavorite.toggle()
+        UserDefaults.standard.set(isFavorite, forKey: "\(league.leaguekey!)")
+        if(isFavorite){
+            league.sportType = sportType.rawValue
+            let result = DBManager.shared.addLeagueToLocalDB(league: league)
+            showAlert(message: result?.message ?? "", title: "")
+        }else{
+            let result = DBManager.shared.removeLeagueFromLocalDB(leagueKey: league.leaguekey!)
+            showAlert(message: result?.message ?? "", title: "")
+        }
+        
+        updateFavoriteButton()
+    }
+    
     func updateFavoriteButton() {
         let imageName = isFavorite ? "heart.fill" : "heart"
         navigationItem.rightBarButtonItem = UIBarButtonItem(
@@ -57,23 +83,16 @@ class FixturesCollectionViewController: UICollectionViewController,
             action: #selector(favoriteTapped)
         )
     }
-
-
-    @objc func favoriteTapped() {
-        isFavorite.toggle()
-        UserDefaults.standard.set(isFavorite, forKey: "\(league.leaguekey!)")
-        updateFavoriteButton()
-    }
-    override func viewWillAppear(_ animated: Bool) {
-        self.navigationItem.title = league.leagueName
-
-        let gradientView = UIView(frame: self.view.bounds)
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.frame = gradientView.bounds
-        gradientLayer.colors = ThemeManager.gradientColors
-        gradientView.layer.insertSublayer(gradientLayer, at: 0)
-
-        self.collectionView.backgroundView = gradientView
+    func showAlert(message : String , title : String) {
+        let alert = UIAlertController(
+            title: title,
+            message: message,
+            preferredStyle: .alert)
+        alert.addAction(
+            UIAlertAction(
+                title: "Ok", style: .default,
+                handler: nil))
+        self.present(alert, animated: true)
     }
 
     func setupNetworkProvider() {
@@ -347,8 +366,8 @@ class FixturesCollectionViewController: UICollectionViewController,
         } else {
             cell.awayTeamLogo.image = UIImage(named: sportType.rawValue)
         }
-        cell.awayTeamName.text = event.eventAwayTeam
-        cell.homeTeamName.text = event.eventHomeTeam
+        cell.awayTeamName.text = event.eventAwayTeam ?? event.eventFirstPlayer
+        cell.homeTeamName.text = event.eventHomeTeam ?? event.eventSecondPlayer
 
         cell.matchStatusView.layer.backgroundColor =
             ThemeManager.getEventStatusColor(status: event.getStatus())

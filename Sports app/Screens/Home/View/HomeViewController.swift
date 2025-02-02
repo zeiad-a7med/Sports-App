@@ -29,9 +29,13 @@ class HomeViewController: UIViewController, UICollectionViewDelegate,
         
         
     }
+
+
     override func viewWillAppear(_ animated: Bool) {
-        self.navigationItem.title = "Sports"
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: true)
     }
+    
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 2
     }

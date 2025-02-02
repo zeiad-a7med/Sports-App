@@ -29,7 +29,9 @@ class CountriesTableViewController: UITableViewController, CountryProtocol {
         networkIndicator.startAnimating()
 
     }
+    
     override func viewWillAppear(_ animated: Bool) {
+        navigationController?.setNavigationBarHidden(false, animated: true)
         self.navigationItem.title = sportType.rawValue.capitalized
         
         let gradientView = UIView(frame: self.view.bounds)

@@ -5,6 +5,7 @@
 //  Created by Zeiad on 28/01/2025.
 //
 import Foundation
+
 struct Event: Codable {
     let eventKey: Int?
     let eventDate: String?
@@ -36,13 +37,15 @@ struct Event: Codable {
     let fkStageKey: Int?
     let stageName: String?
     let leagueGroup: String?
+    let eventFirstPlayer: String?
+    let eventSecondPlayer: String?
     let goalscorers: [Goalscorer]?
-//    let substitutes: [Substitute]?
+    //    let substitutes: [Substitute]?
     let cards: [Card]?
-//    let vars: Vars?
-//    let lineups: Lineups?
+    //    let vars: Vars?
+    //    let lineups: Lineups?
     let statistics: [Statistic]?
-//    let playerStats: PlayerStats?
+    //    let playerStats: PlayerStats?
 
     enum CodingKeys: String, CodingKey {
         case eventKey = "event_key"
@@ -52,6 +55,8 @@ struct Event: Codable {
         case homeTeamKey = "home_team_key"
         case eventAwayTeam = "event_away_team"
         case awayTeamKey = "away_team_key"
+        case eventFirstPlayer = "event_first_player"
+        case eventSecondPlayer = "event_second_player"
         case eventHalftimeResult = "event_halftime_result"
         case eventFinalResult = "event_final_result"
         case eventFtResult = "event_ft_result"
@@ -76,52 +81,56 @@ struct Event: Codable {
         case stageName = "stage_name"
         case leagueGroup = "league_group"
         case goalscorers = "goalscorers"
-//        case substitutes = "substitutes"
         case cards = "cards"
-//        case vars = "vars"
-//        case lineups = "lineups"
         case statistics = "statistics"
-//        case playerStats = "player_stats"
     }
-    
-    
-    func getStatus() -> EventStatus {
-        
-        let currentDate = Date()
-            let dateFormatter = DateFormatter()
-            
-            // Set date format for eventDate (assuming format: "yyyy-MM-dd")
-            dateFormatter.dateFormat = "yyyy-MM-dd"
-            guard let datePart = eventDate, let parsedDate = dateFormatter.date(from: datePart) else {
-                return .notStarted
-            }
-            
-            // Set time format for eventTime (assuming format: "HH:mm")
-            dateFormatter.dateFormat = "HH:mm"
-            guard let timePart = eventTime, let parsedTime = dateFormatter.date(from: timePart) else {
-                return .notStarted
-            }
 
-            // Combine eventDate and eventTime into a single Date object
-            let calendar = Calendar.current
-            let eventDateTime = calendar.date(bySettingHour: calendar.component(.hour, from: parsedTime),
-                                              minute: calendar.component(.minute, from: parsedTime),
-                                              second: 0,
-                                              of: parsedDate) ?? parsedDate
-            
-            // Compare with current date
-            if eventDateTime < currentDate {
-                return .finished
-            } else if eventLive == "1" || calendar.isDate(eventDateTime, equalTo: currentDate, toGranularity: .minute) {
-                return .live
-            } else {
-                return .notStarted
-            }
+    func getStatus() -> EventStatus {
+
+        let currentDate = Date()
+        let dateFormatter = DateFormatter()
+
+        // Set date format for eventDate (assuming format: "yyyy-MM-dd")
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        guard let datePart = eventDate,
+            let parsedDate = dateFormatter.date(from: datePart)
+        else {
+            return .notStarted
+        }
+
+        // Set time format for eventTime (assuming format: "HH:mm")
+        dateFormatter.dateFormat = "HH:mm"
+        guard let timePart = eventTime,
+            let parsedTime = dateFormatter.date(from: timePart)
+        else {
+            return .notStarted
+        }
+
+        // Combine eventDate and eventTime into a single Date object
+        let calendar = Calendar.current
+        let eventDateTime =
+            calendar.date(
+                bySettingHour: calendar.component(.hour, from: parsedTime),
+                minute: calendar.component(.minute, from: parsedTime),
+                second: 0,
+                of: parsedDate) ?? parsedDate
+
+        // Compare with current date
+        if eventDateTime < currentDate {
+            return .finished
+        } else if eventLive == "1"
+            || calendar.isDate(
+                eventDateTime, equalTo: currentDate, toGranularity: .minute)
+        {
+            return .live
+        } else {
+            return .notStarted
+        }
     }
-    
+
 }
 
-enum EventStatus : String{
+enum EventStatus: String {
     case notStarted = "Not Started"
     case live = "Live"
     case finished = "Finished"

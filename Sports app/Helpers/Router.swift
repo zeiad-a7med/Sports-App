@@ -11,7 +11,8 @@ class Router {
     static func goToHomePage(from: UIViewController) {
         let homeVC =
             from.storyboard?.instantiateViewController(
-                identifier: RouteString.HomePage) as! HomeViewController
+                identifier: RouteString.HomePage)
+        as! UIViewController
         from.navigationController?.pushViewController(homeVC, animated: true)
     }
     static func goToCountriesPage(from: UIViewController, sportType: SportType)
@@ -57,7 +58,7 @@ class Router {
 }
 
 class RouteString {
-    static let HomePage = "home"
+    static let HomePage = "main"
     static let CountriesPage = "countries"
     static let LeaguesPage = "leagues"
     static let FixturesPage = "fixtures"

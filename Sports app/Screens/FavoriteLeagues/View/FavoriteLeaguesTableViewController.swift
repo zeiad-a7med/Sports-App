@@ -7,43 +7,49 @@
 
 import UIKit
 
-class FavoriteLeaguesTableViewController: UITableViewController{
+class FavoriteLeaguesViewController: UIViewController,
+                                     UITableViewDelegate, UITableViewDataSource , FavoriteLeagueProtocol
+{
+    
+    
 
+    @IBOutlet weak var tableView: UITableView!
     var leagues: [League] = []
-    let presenter = LeaguePresenter()
+    let presenter = FavoriteLeaguePresenter()
+    let searchController = UISearchController(searchResultsController: nil)
+
     var filteredLeagues: [League] = []
     var isSearchActive = false
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.tableView.delegate = self
+        self.tableView.dataSource = self
         let nib = UINib(nibName: "LeagueTableViewCell", bundle: nil)
         self.tableView.register(
             nib, forCellReuseIdentifier: "LeagueTableViewCell")
-        let gradientView = UIView(frame: self.view.bounds)
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.frame = gradientView.bounds
-        gradientLayer.colors = ThemeManager.gradientColors
-        gradientView.layer.insertSublayer(gradientLayer, at: 0)
-        tableView.backgroundView = gradientView
-        setupSearchController()
-        
-        
+        let layer = CAGradientLayer()
+        layer.frame = view.bounds
+        layer.colors = ThemeManager.gradientColors
+        view.layer.insertSublayer(layer, at: 0)
+        presenter.attachView(view: self)
+//        setupSearchController()
     }
     override func viewWillAppear(_ animated: Bool) {
-        loadData()
-//        self.navigationItem.title = "Favorite Leagues"
-        
+        presenter.getDataFromLocalDB()
+        navigationController?.setNavigationBarHidden(true, animated: true)
     }
+    
 
-    func loadData() {
-        let response = DBManager.shared.getFavoriteLeaguesFromLocalDB()
-        if response.success{
+    func renderToView(result: LocalDBResponse?) {
+        if ((result?.success) != nil) {
             DispatchQueue.main.async {
-                self.filteredLeagues = response.data as? [League] ?? []
+                self.leagues = result?.data ?? []
+                self.filteredLeagues = result?.data ?? []
                 self.tableView.reloadData()
             }
-            
         }
     }
+    
 
     func showNetworkErrorAlert() {
         let alert = UIAlertController(
@@ -61,19 +67,17 @@ class FavoriteLeaguesTableViewController: UITableViewController{
 
     // MARK: - Table view data source
 
-    override func numberOfSections(in tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
+    func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
 
-    override func tableView(
+    func tableView(
         _ tableView: UITableView, numberOfRowsInSection section: Int
     ) -> Int {
-        // #warning Incomplete implementation, return the number of rows
         return filteredLeagues.count
     }
 
-    override func tableView(
+    func tableView(
         _ tableView: UITableView, cellForRowAt indexPath: IndexPath
     ) -> UITableViewCell {
         let cell =
@@ -87,86 +91,46 @@ class FavoriteLeaguesTableViewController: UITableViewController{
             if let imageUrl = URL(string: league.leagueLogo!) {
                 cell.leagueImage.kf.setImage(with: imageUrl)
             } else {
-                cell.leagueImage.image = UIImage(named: league.sportType ?? SportType.football.rawValue)
+                cell.leagueImage.image = UIImage(
+                    named: league.sportType ?? SportType.football.rawValue)
             }
         } else {
-            cell.leagueImage.image = UIImage(named: league.sportType ?? SportType.football.rawValue)
+            cell.leagueImage.image = UIImage(
+                named: league.sportType ?? SportType.football.rawValue)
         }
 
         return cell
     }
-    override func tableView(
+    func tableView(
         _ tableView: UITableView, heightForRowAt indexPath: IndexPath
     ) -> CGFloat {
         return 120
     }
-    override func tableView(
+    func tableView(
         _ tableView: UITableView, didSelectRowAt indexPath: IndexPath
     ) {
         Router.goToFixturesPage(
-            from: self, sportType:  SportType.allCases.first{$0.rawValue == filteredLeagues[indexPath.row].sportType} ?? .football,
+            from: self,
+            sportType: SportType.allCases.first {
+                $0.rawValue == filteredLeagues[indexPath.row].sportType
+            } ?? .football,
             league: filteredLeagues[indexPath.row])
     }
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
-    }
-    */
-
-    /*
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }
-    }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }
-extension FavoriteLeaguesTableViewController: UISearchResultsUpdating,
+extension FavoriteLeaguesViewController: UISearchResultsUpdating,
     UISearchBarDelegate
 {
 
     func setupSearchController() {
-        let searchController = UISearchController(searchResultsController: nil)
-            searchController.searchResultsUpdater = self
-            searchController.searchBar.delegate = self
-            searchController.obscuresBackgroundDuringPresentation = false
-            searchController.searchBar.placeholder = "Search for league"
-
-            // Use navigationItem instead
-            navigationItem.searchController = searchController
-            definesPresentationContext = true
+        searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchBar.placeholder = "Search in your favorites"
+//        searchController.searchBar.backgroundColor = .clear
+//        searchController.searchBar.setBackgroundImage(UIImage(), for: .any, barMetrics: .default)
+        searchController.searchBar.isTranslucent = true
+        searchController.searchBar.showsCancelButton = false
+        self.tableView.tableHeaderView = searchController.searchBar
     }
 
     // Update search results

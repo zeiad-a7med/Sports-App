@@ -10,7 +10,7 @@ import UIKit
 class LaunchScreenViewController: UIViewController {
 
     private let logoImageView: UIImageView = {
-        let imageView = UIImageView(image: UIImage(named: "app_logo"))  // Replace with your logo's name
+        let imageView = UIImageView(image: UIImage(named: "app_icon"))  // Replace with your logo's name
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
@@ -21,8 +21,7 @@ class LaunchScreenViewController: UIViewController {
         setupView()
         playAnimation()
     }
-
-    private func setupView() {
+        private func setupView() {
         view.backgroundColor = UIColor.systemBackground  // Set the background color
         view.addSubview(logoImageView)
 
@@ -54,17 +53,9 @@ class LaunchScreenViewController: UIViewController {
                 }
             ) { _ in
                 // Transition to the main app screen
-                self.transitionToMainScreen()
+                Router.goToHomePage(from: self)
             }
         }
-    }
-
-    private func transitionToMainScreen() {
-        // Transition to the main app (e.g., MainViewController)
-        let mainVC = HomeViewController()  // Replace with your main screen
-        mainVC.modalTransitionStyle = .crossDissolve
-        mainVC.modalPresentationStyle = .fullScreen
-        self.present(mainVC, animated: true, completion: nil)
     }
 
 }

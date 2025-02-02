@@ -32,6 +32,7 @@ class LeaguesTableViewController: UITableViewController, LeagueProtocol {
 
     }
     override func viewWillAppear(_ animated: Bool) {
+        navigationController?.setNavigationBarHidden(false, animated: true)
         self.navigationItem.title = "Leagues"
 
         let gradientView = UIView(frame: self.view.bounds)

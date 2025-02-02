@@ -18,16 +18,6 @@ class DBManager {
     }
 
     func addLeagueToLocalDB(league: League) -> LocalDBResponse? {
-//        let fetch = NSFetchRequest<NSManagedObject>(entityName: "League")
-        //        do {
-        //            let moviesDBList: [NSManagedObject] = try manager!.fetch(fetch)
-        //            for movieDB in moviesDBList {
-        //                manager?.delete(movieDB)
-        //            }
-        //            print("all deleted !!")
-        //        } catch let error {
-        //            print(error.localizedDescription)
-        //        }
         let entity = NSEntityDescription.entity(
             forEntityName: "LeagueModel", in: manager!)
         let LeagueDB = NSManagedObject(entity: entity!, insertInto: manager)
@@ -38,6 +28,7 @@ class DBManager {
         LeagueDB.setValue(league.countrykey, forKey: "countrykey")
         LeagueDB.setValue(league.countryName, forKey: "countryName")
         LeagueDB.setValue(league.countryLogo, forKey: "countryLogo")
+        LeagueDB.setValue(league.sportType, forKey: "sportType")
         do {
             try manager!.save()
             return LocalDBResponse(
@@ -49,6 +40,38 @@ class DBManager {
                 success: false, message: "Failed to add League to favorites",
                 data: nil)
 
+        }
+    }
+    
+    func removeLeagueFromLocalDB(leagueKey: Int) -> LocalDBResponse? {
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "LeagueModel")
+        fetchRequest.predicate = NSPredicate(format: "leaguekey == %d", leagueKey)
+        
+        do {
+            let fetchedLeagues = try manager!.fetch(fetchRequest)
+            
+            if let leagueToDelete = fetchedLeagues.first as? NSManagedObject {
+                manager?.delete(leagueToDelete)
+                try manager!.save()
+                UserDefaults.standard.set(false, forKey: "\(leagueKey)")
+                return LocalDBResponse(
+                    success: true,
+                    message: "League removed from favorites successfully",
+                    data: nil
+                )
+            } else {
+                return LocalDBResponse(
+                    success: false,
+                    message: "League not found in favorites",
+                    data: nil
+                )
+            }
+        } catch {
+            return LocalDBResponse(
+                success: false,
+                message: "Failed to remove League from favorites",
+                data: nil
+            )
         }
     }
     
@@ -66,13 +89,16 @@ class DBManager {
             return LocalDBResponse(success: false , message: "failed to load data" , data: nil)
         }
     }
+    
+    
+    
 }
 
 class LocalDBResponse {
     var success: Bool
     var message: String?
-    var data: [Any]?
-    init(success: Bool, message: String? = nil, data: [Any]? = nil) {
+    var data: [League]?
+    init(success: Bool, message: String? = nil, data: [League]? = nil) {
         self.success = success
         self.message = message
         self.data = data
