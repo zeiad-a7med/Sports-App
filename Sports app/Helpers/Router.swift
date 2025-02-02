@@ -12,8 +12,8 @@ class Router {
         let homeVC =
             from.storyboard?.instantiateViewController(
                 identifier: RouteString.HomePage)
-        as! UIViewController
-        from.navigationController?.pushViewController(homeVC, animated: true)
+        as? UIViewController
+        from.navigationController?.pushViewController(homeVC!, animated: true)
     }
     static func goToCountriesPage(from: UIViewController, sportType: SportType)
     {
@@ -39,13 +39,6 @@ class Router {
     static func goToFixturesPage(
         from: UIViewController, sportType: SportType, league: League
     ) {
-//        let fixturesVC =
-//            from.storyboard?.instantiateViewController(
-//                identifier: RouteString.FixturesPage)
-//            as! FixturesTableViewController
-//        fixturesVC.sportType = sportType
-//        fixturesVC.league = league
-//        from.navigationController?.pushViewController(fixturesVC, animated: true)
         let fixturesVC =
             from.storyboard?.instantiateViewController(
                 identifier: RouteString.FixturesPage)
@@ -55,6 +48,7 @@ class Router {
         from.navigationController?.pushViewController(fixturesVC, animated: true)
         
     }
+    
 }
 
 class RouteString {
@@ -62,4 +56,5 @@ class RouteString {
     static let CountriesPage = "countries"
     static let LeaguesPage = "leagues"
     static let FixturesPage = "fixtures"
+    static let EventDetailsPage = "eventDetails"
 }

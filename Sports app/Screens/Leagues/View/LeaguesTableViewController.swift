@@ -144,36 +144,6 @@ class LeaguesTableViewController: UITableViewController, LeagueProtocol {
     }
     */
 
-    
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView,
-                            leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        
-        // Create the action
-        let favoriteAction = UIContextualAction(style: .normal, title: "Favorite") { action, view, completionHandler in
-            // Handle adding to favorites
-            self.addToFavorites(at: indexPath)
-            completionHandler(true)
-        }
-        
-        // Customize the action (e.g., change background color)
-        favoriteAction.backgroundColor = .systemCyan
-        favoriteAction.image = UIImage(systemName: "star.fill")
-        
-        // Return the swipe configuration with the action
-        return UISwipeActionsConfiguration(actions: [favoriteAction])
-    }
-
-    // Example function to handle adding to favorites
-    func addToFavorites(at indexPath: IndexPath) {
-        var item = filteredLeagues[indexPath.row] // Replace `data` with your actual data source
-        item.sportType = sportType.rawValue
-        let result = DBManager.shared.addLeagueToLocalDB(league: item)
-        if result?.success ?? false {
-            print(result?.message ?? "okkaay")
-        }
-        // Update your data model and UI accordingly
-    }
     /*
     // Override to support rearranging the table view.
     override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {

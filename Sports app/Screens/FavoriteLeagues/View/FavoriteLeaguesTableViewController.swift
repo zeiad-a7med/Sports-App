@@ -8,10 +8,8 @@
 import UIKit
 
 class FavoriteLeaguesViewController: UIViewController,
-                                     UITableViewDelegate, UITableViewDataSource , FavoriteLeagueProtocol
+    UITableViewDelegate, UITableViewDataSource, FavoriteLeagueProtocol
 {
-    
-    
 
     @IBOutlet weak var tableView: UITableView!
     var leagues: [League] = []
@@ -32,16 +30,15 @@ class FavoriteLeaguesViewController: UIViewController,
         layer.colors = ThemeManager.gradientColors
         view.layer.insertSublayer(layer, at: 0)
         presenter.attachView(view: self)
-//        setupSearchController()
+        //        setupSearchController()
     }
     override func viewWillAppear(_ animated: Bool) {
         presenter.getDataFromLocalDB()
         navigationController?.setNavigationBarHidden(true, animated: true)
     }
-    
 
     func renderToView(result: LocalDBResponse?) {
-        if ((result?.success) != nil) {
+        if (result?.success) != nil {
             DispatchQueue.main.async {
                 self.leagues = result?.data ?? []
                 self.filteredLeagues = result?.data ?? []
@@ -49,7 +46,6 @@ class FavoriteLeaguesViewController: UIViewController,
             }
         }
     }
-    
 
     func showNetworkErrorAlert() {
         let alert = UIAlertController(
@@ -116,6 +112,21 @@ class FavoriteLeaguesViewController: UIViewController,
             } ?? .football,
             league: filteredLeagues[indexPath.row])
     }
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+           if editingStyle == .delete {
+               removeFromFavorites(at: indexPath)
+           }
+       }
+    
+    func removeFromFavorites(at indexPath: IndexPath) {
+        let item = filteredLeagues[indexPath.row]  // Replace `data` with your actual
+        let result = DBManager.shared.removeLeagueFromLocalDB(leagueKey: item.leaguekey!)
+        if (result != nil && result?.success == true) {
+            filteredLeagues.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .automatic)
+            
+        }
+    }
 
 }
 extension FavoriteLeaguesViewController: UISearchResultsUpdating,
@@ -126,8 +137,8 @@ extension FavoriteLeaguesViewController: UISearchResultsUpdating,
         searchController.searchResultsUpdater = self
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.searchBar.placeholder = "Search in your favorites"
-//        searchController.searchBar.backgroundColor = .clear
-//        searchController.searchBar.setBackgroundImage(UIImage(), for: .any, barMetrics: .default)
+        //        searchController.searchBar.backgroundColor = .clear
+        //        searchController.searchBar.setBackgroundImage(UIImage(), for: .any, barMetrics: .default)
         searchController.searchBar.isTranslucent = true
         searchController.searchBar.showsCancelButton = false
         self.tableView.tableHeaderView = searchController.searchBar
