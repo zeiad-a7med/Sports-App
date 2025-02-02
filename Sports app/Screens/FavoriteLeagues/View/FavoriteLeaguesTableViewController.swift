@@ -42,11 +42,16 @@ class FavoriteLeaguesViewController: UIViewController,
             DispatchQueue.main.async {
                 self.leagues = result?.data ?? []
                 self.filteredLeagues = result?.data ?? []
-                self.tableView.reloadData()
+                if(!self.leagues.isEmpty){
+//                    self.view.layer.sublayers.
+                    self.tableView.reloadData()
+                }else{
+                    ThemeManager.emptyState(at: self)
+                }
+                
             }
         }
     }
-
     func showNetworkErrorAlert() {
         let alert = UIAlertController(
             title: "Something went wrong",

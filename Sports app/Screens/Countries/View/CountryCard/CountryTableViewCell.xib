@@ -22,7 +22,7 @@
                             <constraint firstAttribute="width" constant="226" id="Omm-gZ-NKz"/>
                             <constraint firstAttribute="height" constant="21" id="khR-Fd-K4X"/>
                         </constraints>
-                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        <fontDescription key="fontDescription" name="MarkerFelt-Thin" family="Marker Felt" pointSize="17"/>
                         <nil key="textColor"/>
                         <nil key="highlightedColor"/>
                     </label>

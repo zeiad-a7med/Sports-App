@@ -19,10 +19,11 @@ class FixturesCollectionViewController: UICollectionViewController,
     let presenter = FixturesPresenter()
     var sportType: SportType!
     var league: League!
+    var lastSection = 0
     let sectionTitles = ["Upcoming Events", "Latest Events", "Upcoming Events"]
     var networkIndicator: UIActivityIndicatorView!
     var isFavorite = false
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionView.register(
@@ -43,7 +44,80 @@ class FixturesCollectionViewController: UICollectionViewController,
         networkIndicator.startAnimating()
         isFavorite = UserDefaults.standard.bool(forKey: "\(league.leaguekey!)")
         updateFavoriteButton()
+        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
+            collectionView.addGestureRecognizer(longPressGesture)
+        
 
+    }
+    
+    
+    @objc func handleLongPress(gesture: UILongPressGestureRecognizer) {
+           if gesture.state == .began {
+               let point = gesture.location(in: collectionView)
+               if let indexPath = collectionView.indexPathForItem(at: point) {
+                   showOptions(for: indexPath)
+               }
+           }
+       }
+    
+    func showOptions(for indexPath: IndexPath) {
+        
+        var event : Event?
+        if(indexPath.section == 0){
+            event = upCommingEvents[indexPath.row]
+        }
+        else{
+            return
+        }
+        
+        let date = (event?.eventDate ?? "") + "\n" + (event?.eventTime ?? "")
+        var eventName : String?
+        
+        if(event?.eventHomeTeam != nil && event?.eventAwayTeam != nil){
+            eventName = (event?.eventHomeTeam ?? "").appending(" VS ").appending(event?.eventAwayTeam ?? "")
+        }else{
+            eventName = (event?.eventFirstPlayer ?? "").appending(" VS ") .appending(event?.eventSecondPlayer ?? "")
+        }
+            let alert = UIAlertController(title: eventName, message: "set reminder for this event at \n \(date)", preferredStyle: .actionSheet)
+        alert.addAction(UIAlertAction(title: "set reminder", style: .default, handler: { _ in
+                print("Delete item at \(indexPath)")
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            
+            if let vc = collectionView.window?.rootViewController {
+                vc.present(alert, animated: true)
+            }
+        }
+    
+    func buildFloatingButton() {
+        let scrollButton = UIButton(type: .system)
+
+        scrollButton.setImage(
+            UIImage(systemName: "arrow.down")?.withRenderingMode(
+                .alwaysTemplate), for: .normal)
+        scrollButton.tintColor = .white  // Ensure the arrow is visible
+        scrollButton.translatesAutoresizingMaskIntoConstraints = false
+        scrollButton.layer.cornerRadius = 25
+        scrollButton.backgroundColor = .systemBlue
+        scrollButton.addTarget(
+            self, action: #selector(scrollToLastSection), for: .touchUpInside)
+        view.addSubview(scrollButton)
+
+        NSLayoutConstraint.activate([
+            scrollButton.bottomAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+            scrollButton.trailingAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
+            scrollButton.widthAnchor.constraint(equalToConstant: 50),
+            scrollButton.heightAnchor.constraint(equalToConstant: 50),
+        ])
+    }
+    @objc func scrollToLastSection() {
+        if(lastSection > 0){
+            collectionView.scrollToItem(
+                at: IndexPath(row: 0, section: lastSection), at: .bottom, animated: true)
+        }
     }
     override func viewWillAppear(_ animated: Bool) {
         self.navigationItem.title = league.leagueName
@@ -56,24 +130,23 @@ class FixturesCollectionViewController: UICollectionViewController,
 
         self.collectionView.backgroundView = gradientView
     }
-    
-    
 
     @objc func favoriteTapped() {
         isFavorite.toggle()
         UserDefaults.standard.set(isFavorite, forKey: "\(league.leaguekey!)")
-        if(isFavorite){
+        if isFavorite {
             league.sportType = sportType.rawValue
             let result = DBManager.shared.addLeagueToLocalDB(league: league)
             showAlert(message: result?.message ?? "", title: "")
-        }else{
-            let result = DBManager.shared.removeLeagueFromLocalDB(leagueKey: league.leaguekey!)
+        } else {
+            let result = DBManager.shared.removeLeagueFromLocalDB(
+                leagueKey: league.leaguekey!)
             showAlert(message: result?.message ?? "", title: "")
         }
-        
+
         updateFavoriteButton()
     }
-    
+
     func updateFavoriteButton() {
         let imageName = isFavorite ? "heart.fill" : "heart"
         navigationItem.rightBarButtonItem = UIBarButtonItem(
@@ -83,7 +156,7 @@ class FixturesCollectionViewController: UICollectionViewController,
             action: #selector(favoriteTapped)
         )
     }
-    func showAlert(message : String , title : String) {
+    func showAlert(message: String, title: String) {
         let alert = UIAlertController(
             title: title,
             message: message,
@@ -120,8 +193,12 @@ class FixturesCollectionViewController: UICollectionViewController,
                     } ?? []
                 self.latestEvents =
                     result?.result?.filter { $0.getStatus() == .finished } ?? []
-
+                
                 self.collectionView.reloadData()
+                self.setLastSectionNumber()
+                if(!self.teams.isEmpty && (!self.upCommingEvents.isEmpty || !self.latestEvents.isEmpty)){
+                    self.buildFloatingButton()
+                }
 
             } else {
                 self.showNetworkErrorAlert()
@@ -135,6 +212,7 @@ class FixturesCollectionViewController: UICollectionViewController,
             if result?.success == 1 {
                 self.teams = result?.result ?? []
                 self.collectionView.reloadData()
+                self.setLastSectionNumber()
             }
         }
     }
@@ -151,7 +229,19 @@ class FixturesCollectionViewController: UICollectionViewController,
                 }))
         self.present(alert, animated: true)
     }
-
+    func setLastSectionNumber(){
+        var numberOfSections: Int = 0
+        if(!upCommingEvents.isEmpty){
+            numberOfSections+=1
+        }
+        if(!latestEvents.isEmpty){
+            numberOfSections+=1
+        }
+        if(!teams.isEmpty){
+            numberOfSections+=1
+        }
+        lastSection = numberOfSections - 1
+    }
     func drawSection(index: Int) -> NSCollectionLayoutSection {
 
         switch index {
@@ -188,9 +278,10 @@ class FixturesCollectionViewController: UICollectionViewController,
 
         section.contentInsets = NSDirectionalEdgeInsets(
             top: 10, leading: 5, bottom: 16, trailing: 0)
-        if(!upCommingEvents.isEmpty){
+        if !upCommingEvents.isEmpty {
             let headerSize = NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(1), heightDimension: .absolute(40))
+                widthDimension: .fractionalWidth(1),
+                heightDimension: .absolute(40))
             let header = NSCollectionLayoutBoundarySupplementaryItem(
                 layoutSize: headerSize,
                 elementKind: UICollectionView.elementKindSectionHeader,
@@ -198,7 +289,7 @@ class FixturesCollectionViewController: UICollectionViewController,
             )
             section.boundarySupplementaryItems = [header]
         }
-        
+
         return section
 
     }
@@ -228,9 +319,10 @@ class FixturesCollectionViewController: UICollectionViewController,
 
         section.contentInsets = NSDirectionalEdgeInsets(
             top: 10, leading: 20, bottom: 10, trailing: 20)
-        if(!teams.isEmpty){
+        if !teams.isEmpty {
             let headerSize = NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(1), heightDimension: .absolute(40))
+                widthDimension: .fractionalWidth(1),
+                heightDimension: .absolute(40))
             let header = NSCollectionLayoutBoundarySupplementaryItem(
                 layoutSize: headerSize,
                 elementKind: UICollectionView.elementKindSectionHeader,
@@ -265,9 +357,10 @@ class FixturesCollectionViewController: UICollectionViewController,
         let section = NSCollectionLayoutSection(group: group)
         section.contentInsets = NSDirectionalEdgeInsets(
             top: 10, leading: 20, bottom: 10, trailing: 20)
-        if(!latestEvents.isEmpty){
+        if !latestEvents.isEmpty {
             let headerSize = NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(1), heightDimension: .absolute(40))
+                widthDimension: .fractionalWidth(1),
+                heightDimension: .absolute(40))
             let header = NSCollectionLayoutBoundarySupplementaryItem(
                 layoutSize: headerSize,
                 elementKind: UICollectionView.elementKindSectionHeader,
@@ -278,16 +371,6 @@ class FixturesCollectionViewController: UICollectionViewController,
         return section
 
     }
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using [segue destinationViewController].
-        // Pass the selected object to the new view controller.
-    }
-    */
 
     // MARK: UICollectionViewDataSource
 
@@ -435,6 +518,14 @@ class FixturesCollectionViewController: UICollectionViewController,
         header.titleLabel.text = title
         return header
     }
+    override func collectionView(
+        _ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath
+    ) {
+        if indexPath.section == 2 {
+            let team = teams[indexPath.row]
+            Router.goToTeamPage(from: self, team: team)
+        }
+    }
 
     //    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
     //        return CGSize(width: collectionView.frame.width, height: 50)
@@ -470,29 +561,4 @@ class FixturesCollectionViewController: UICollectionViewController,
     }
     */
 
-}
-
-class HeaderView: UICollectionReusableView {
-    let titleLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 28, weight: .bold)
-        label.textColor = .white
-        
-        return label
-    }()
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        addSubview(titleLabel)
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            titleLabel.leadingAnchor.constraint(
-                equalTo: leadingAnchor, constant: 16),
-            titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
-        ])
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
 }

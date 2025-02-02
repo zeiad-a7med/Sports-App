@@ -49,6 +49,17 @@ class Router {
         
     }
     
+    static func goToTeamPage(
+        from: UIViewController, team: Team
+    ) {
+        let vc =
+            from.storyboard?.instantiateViewController(
+                identifier: RouteString.teamPage)
+        as! TeamDetailsCollectionViewController
+        vc.team = team
+        from.navigationController?.pushViewController(vc, animated: true)
+    }
+    
 }
 
 class RouteString {
@@ -56,5 +67,5 @@ class RouteString {
     static let CountriesPage = "countries"
     static let LeaguesPage = "leagues"
     static let FixturesPage = "fixtures"
-    static let EventDetailsPage = "eventDetails"
+    static let teamPage = "team"
 }

@@ -33,7 +33,7 @@
                                     <constraint firstAttribute="width" constant="178" id="7Wg-CS-usH"/>
                                     <constraint firstAttribute="height" constant="47" id="VSG-o0-D2g"/>
                                 </constraints>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <fontDescription key="fontDescription" name="MarkerFelt-Thin" family="Marker Felt" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
