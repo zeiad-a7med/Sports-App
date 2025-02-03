@@ -30,46 +30,73 @@ class ThemeManager {
             return UIColor.gray.cgColor
         }
     }
-    static func emptyState(at : UIViewController){
-        let animationView = LottieAnimationView(name: "emptyState")
+    static func emptyState(at : UIViewController , message : String ,emptyStateType : EmptyStateType){
+        removeEmptyState(from : at)
+        let animationView = LottieAnimationView(name: emptyStateType.rawValue)
         animationView.frame = CGRect(x: 0, y: 0, width: 300, height: 300)
         animationView.center = at.view.center
         animationView.contentMode = .scaleAspectFit
         animationView.backgroundColor = .clear
+        animationView.tag = 404
         at.view.addSubview(animationView)
-        animationView.loopMode = .loop  // Loop animation
-        animationView.play()  // Start animation
+        animationView.loopMode = .loop
+        animationView.play()
         
         
-        
+        let label = UILabel()
+        label.text = message
+        label.textAlignment = .center
+        label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        label.textColor = .gray
+        label.numberOfLines = 0
+        label.sizeToFit()
+        label.tag = 405
+
+        label.center = CGPoint(x: animationView.center.x, y: animationView.frame.maxY + 20)
+        at.view.addSubview(label)
+    }
+    static func removeEmptyState(from : UIViewController){
+        if let lottieToRemove = from.view.viewWithTag(404),
+           let index = from.view.subviews.firstIndex(of: lottieToRemove) {
+            from.view.subviews[index].removeFromSuperview()
+        }
+        if let labelToRemove = from.view.viewWithTag(405),
+           let index = from.view.subviews.firstIndex(of: labelToRemove) {
+            from.view.subviews[index].removeFromSuperview()
+        }
+    }
+    
+    static func addMainBackgroundToTable(at : UITableViewController){
+        let gradientView = UIView(frame: at.view.bounds)
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.frame = gradientView.bounds
+        gradientLayer.colors = ThemeManager.gradientColors
+        gradientView.layer.insertSublayer(gradientLayer, at: 0)
+        at.tableView.backgroundView = gradientView
+    }
+    static func addMainBackgroundToView(at : UIViewController)
+    {
         let layer = CAGradientLayer()
         layer.frame = at.view.bounds
         layer.colors = ThemeManager.gradientColors
-        at.view.layer.insertSublayer(layer, at: 100)
-//
-//        let emptyStateView = UIView()
-//        emptyStateView.backgroundColor = .lightGray
-//
-//        // Create and configure the label
-//        let label = UILabel()
-//        label.text = "No Data Available"
-//        label.textAlignment = .center
-//        label.textColor = .black
-//        label.translatesAutoresizingMaskIntoConstraints = false
-//        
-//        emptyStateView.addSubview(label)
-//        emptyStateView.translatesAutoresizingMaskIntoConstraints = false
-//        at.view.addSubview(emptyStateView)
-//        NSLayoutConstraint.activate([
-//            emptyStateView.centerXAnchor.constraint(equalTo: at.view.centerXAnchor),
-//            emptyStateView.centerYAnchor.constraint(equalTo: at.view.centerYAnchor),
-//            emptyStateView.widthAnchor.constraint(equalTo: at.view.widthAnchor, multiplier: 0.8),
-//            emptyStateView.heightAnchor.constraint(equalToConstant: 100)
-//        ])
-//        NSLayoutConstraint.activate([
-//            label.centerXAnchor.constraint(equalTo: emptyStateView.centerXAnchor),
-//            label.centerYAnchor.constraint(equalTo: emptyStateView.centerYAnchor)
-//        ])
+        at.view.layer.insertSublayer(layer, at: 0)
     }
+    static func addMainBackgroundToCollectionView(at : UICollectionViewController)
+    {
+        let gradientView = UIView(frame: at.view.bounds)
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.frame = gradientView.bounds
+        gradientLayer.colors = ThemeManager.gradientColors
+        gradientView.layer.insertSublayer(gradientLayer, at: 0)
+        at.collectionView.backgroundView = gradientView
+    }
+    
+    
 
+}
+
+enum EmptyStateType : String{
+    case emptyData = "emptyData"
+    case emptySearch = "emptySearch"
+    case noInternetConnection = "noInternetConnection"
 }

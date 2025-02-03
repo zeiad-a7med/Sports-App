@@ -10,9 +10,9 @@ import UIKit
 
 class FixturesCollectionViewController: UICollectionViewController,
     UICollectionViewDelegateFlowLayout,
-    FixturesProtocol
+    FixturesProtocol,
+    DataStateProtocol
 {
-
     var upCommingEvents: [Event] = []
     var latestEvents: [Event] = []
     var teams: [Team] = []
@@ -26,6 +26,7 @@ class FixturesCollectionViewController: UICollectionViewController,
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.navigationItem.title = sportType.rawValue
         collectionView.register(
             HeaderView.self,
             forSupplementaryViewOfKind: UICollectionView
@@ -34,76 +35,147 @@ class FixturesCollectionViewController: UICollectionViewController,
             return self.drawSection(index: index)
         }
         collectionView.setCollectionViewLayout(layout, animated: true)
-
         setupNetworkProvider()
-        self.navigationItem.title = sportType.rawValue
         presenter.attachView(view: self)
+        isFavorite = UserDefaults.standard.bool(forKey: "\(league.leaguekey!)")
+        updateFavoriteButton()
+        let longPressGesture = UILongPressGestureRecognizer(
+            target: self, action: #selector(handleLongPress))
+        collectionView.addGestureRecognizer(longPressGesture)
+
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        self.navigationItem.title = league.leagueName
+        navigationController?.setNavigationBarHidden(false, animated: true)
+        ThemeManager.addMainBackgroundToCollectionView(at: self)
+    }
+    // MARK: - Data providers section
+
+    func setupNetworkProvider() {
         networkIndicator = UIActivityIndicatorView(style: .large)
         networkIndicator.center = self.view.center
         self.view.addSubview(networkIndicator)
+
+        if NetworkManager.instance.isConnectedToNetwork {
+            self.networkRecoveredAction()
+        } else {
+            self.networkLostAction()
+        }
+        NetworkManager.instance.onNetworkRecovered = {
+            self.networkRecoveredAction()
+        }
+        NetworkManager.instance.onNetworkLost = {
+            self.networkLostAction()
+        }
+    }
+    func networkLostAction() {
+        self.teams = []
+        self.latestEvents = []
+        self.upCommingEvents = []
+        self.collectionView.reloadData()
+        ThemeManager.emptyState(
+            at: self, message: "The internet connection appears to be offline",
+            emptyStateType: .noInternetConnection)
+        self.networkIndicator.stopAnimating()
+        if let floatingBtn = self.view.viewWithTag(111),
+            let index = self.view.subviews.firstIndex(of: floatingBtn)
+        {
+            self.view.subviews[index].removeFromSuperview()
+        }
+        self.showNetworkErrorAlert()
+    }
+    func networkRecoveredAction() {
+        ThemeManager.removeEmptyState(from: self)
         networkIndicator.startAnimating()
-        isFavorite = UserDefaults.standard.bool(forKey: "\(league.leaguekey!)")
-        updateFavoriteButton()
-        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
-            collectionView.addGestureRecognizer(longPressGesture)
-        
+        self.presenter.getDataFromAPI(sportType: sportType, league: league)
+        self.presenter.getTeamsDataFromAPI(
+            sportType: sportType, league: league)
 
     }
-    
-    
-    @objc func handleLongPress(gesture: UILongPressGestureRecognizer) {
-           if gesture.state == .began {
-               let point = gesture.location(in: collectionView)
-               if let indexPath = collectionView.indexPathForItem(at: point) {
-                   showOptions(for: indexPath)
-               }
-           }
-       }
-    
-    func showOptions(for indexPath: IndexPath) {
-        
-        var event : Event?
-        if(indexPath.section == 0){
-            event = upCommingEvents[indexPath.row]
+    func renderToView(result: FixturesResult?) {
+        DispatchQueue.main.async {
+            if result?.success == 1 {
+                self.upCommingEvents =
+                    result?.result?.filter {
+                        $0.getStatus() == .live || $0.getStatus() == .notStarted
+                    } ?? []
+                self.latestEvents =
+                    result?.result?.filter { $0.getStatus() == .finished } ?? []
+
+                self.collectionView.reloadData()
+                self.setLastSectionNumber()
+                self.checkDataState()
+                if !self.latestEvents.isEmpty && self.latestEvents.count > 10 {
+                    self.buildFloatingButton()
+                }
+
+            } else {
+                self.showNetworkErrorAlert()
+            }
+            self.networkIndicator.stopAnimating()
+
         }
-        else{
-            return
-        }
-        
-        let date = (event?.eventDate ?? "") + "\n" + (event?.eventTime ?? "")
-        var eventName : String?
-        
-        if(event?.eventHomeTeam != nil && event?.eventAwayTeam != nil){
-            eventName = (event?.eventHomeTeam ?? "").appending(" VS ").appending(event?.eventAwayTeam ?? "")
-        }else{
-            eventName = (event?.eventFirstPlayer ?? "").appending(" VS ") .appending(event?.eventSecondPlayer ?? "")
-        }
-            let alert = UIAlertController(title: eventName, message: "set reminder for this event at \n \(date)", preferredStyle: .actionSheet)
-        alert.addAction(UIAlertAction(title: "set reminder", style: .default, handler: { _ in
-                print("Delete item at \(indexPath)")
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-            
-            if let vc = collectionView.window?.rootViewController {
-                vc.present(alert, animated: true)
+    }
+    func renderTeamsToView(result: TeamsResult?) {
+        DispatchQueue.main.async {
+            if result?.success == 1 {
+                self.teams = result?.result ?? []
+                self.collectionView.reloadData()
+                self.setLastSectionNumber()
+                self.checkDataState()
             }
         }
-    
+    }
+    func checkDataState() {
+        if !self.teams.isEmpty || !self.upCommingEvents.isEmpty
+            || !self.latestEvents.isEmpty
+        {
+            ThemeManager.removeEmptyState(from: self)
+        }
+        if self.teams.isEmpty && self.upCommingEvents.isEmpty
+            && self.latestEvents.isEmpty
+        {
+            ThemeManager.emptyState(
+                at: self,
+                message: "No matches available for \(self.league.leagueName!)",
+                emptyStateType: .emptyData)
+        }
+    }
+    func showNetworkErrorAlert() {
+        let alert = UIAlertController(
+            title: "Something went wrong",
+            message: "Please check your internet connection",
+            preferredStyle: .alert)
+        alert.addAction(
+            UIAlertAction(
+                title: "Ok", style: .default,
+                handler: nil))
+        self.present(alert, animated: true)
+    }
+
+    // MARK: - supporting components section
+    @objc func handleLongPress(gesture: UILongPressGestureRecognizer) {
+        if gesture.state == .began {
+            let point = gesture.location(in: collectionView)
+            if let indexPath = collectionView.indexPathForItem(at: point) {
+                showOptions(for: indexPath)
+            }
+        }
+    }
     func buildFloatingButton() {
         let scrollButton = UIButton(type: .system)
-
+        scrollButton.tag = 111
         scrollButton.setImage(
             UIImage(systemName: "arrow.down")?.withRenderingMode(
                 .alwaysTemplate), for: .normal)
         scrollButton.tintColor = .white  // Ensure the arrow is visible
         scrollButton.translatesAutoresizingMaskIntoConstraints = false
         scrollButton.layer.cornerRadius = 25
-        scrollButton.backgroundColor = .systemBlue
+        scrollButton.backgroundColor = UIColor(red: 24/255, green: 184/255, blue: 154/255, alpha: 1)
         scrollButton.addTarget(
             self, action: #selector(scrollToLastSection), for: .touchUpInside)
         view.addSubview(scrollButton)
-
         NSLayoutConstraint.activate([
             scrollButton.bottomAnchor.constraint(
                 equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
@@ -114,23 +186,18 @@ class FixturesCollectionViewController: UICollectionViewController,
         ])
     }
     @objc func scrollToLastSection() {
-        if(lastSection > 0){
-            collectionView.scrollToItem(
-                at: IndexPath(row: 0, section: lastSection), at: .bottom, animated: true)
+        var section = 0
+        var row = 0
+        if teams.count > 0 {
+            section = 2
+        } else {
+            section = 1
+            row = latestEvents.count - 1
         }
+        collectionView.scrollToItem(
+            at: IndexPath(row: row, section: section), at: .bottom, animated: true
+        )
     }
-    override func viewWillAppear(_ animated: Bool) {
-        self.navigationItem.title = league.leagueName
-        navigationController?.setNavigationBarHidden(false, animated: true)
-        let gradientView = UIView(frame: self.view.bounds)
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.frame = gradientView.bounds
-        gradientLayer.colors = ThemeManager.gradientColors
-        gradientView.layer.insertSublayer(gradientLayer, at: 0)
-
-        self.collectionView.backgroundView = gradientView
-    }
-
     @objc func favoriteTapped() {
         isFavorite.toggle()
         UserDefaults.standard.set(isFavorite, forKey: "\(league.leaguekey!)")
@@ -143,10 +210,8 @@ class FixturesCollectionViewController: UICollectionViewController,
                 leagueKey: league.leaguekey!)
             showAlert(message: result?.message ?? "", title: "")
         }
-
         updateFavoriteButton()
     }
-
     func updateFavoriteButton() {
         let imageName = isFavorite ? "heart.fill" : "heart"
         navigationItem.rightBarButtonItem = UIBarButtonItem(
@@ -167,83 +232,59 @@ class FixturesCollectionViewController: UICollectionViewController,
                 handler: nil))
         self.present(alert, animated: true)
     }
+    func showOptions(for indexPath: IndexPath) {
 
-    func setupNetworkProvider() {
-        if NetworkManager.instance.isConnectedToNetwork {
-            self.presenter.getDataFromAPI(sportType: sportType, league: league)
-            self.presenter.getTeamsDataFromAPI(
-                sportType: sportType, league: league)
+        var event: Event?
+        if indexPath.section == 0 {
+            event = upCommingEvents[indexPath.row]
         } else {
-            self.showNetworkErrorAlert()
+            return
         }
-        NetworkManager.instance.onNetworkRecovered = {
-            print("recovered")
-        }
-        NetworkManager.instance.onNetworkLost = {
-            self.showNetworkErrorAlert()
-        }
-    }
 
-    func renderToView(result: FixturesResult?) {
-        DispatchQueue.main.async {
-            if result?.success == 1 {
-                self.upCommingEvents =
-                    result?.result?.filter {
-                        $0.getStatus() == .live || $0.getStatus() == .notStarted
-                    } ?? []
-                self.latestEvents =
-                    result?.result?.filter { $0.getStatus() == .finished } ?? []
-                
-                self.collectionView.reloadData()
-                self.setLastSectionNumber()
-                if(!self.teams.isEmpty && (!self.upCommingEvents.isEmpty || !self.latestEvents.isEmpty)){
-                    self.buildFloatingButton()
-                }
+        let date = (event?.eventDate ?? "") + "\n" + (event?.eventTime ?? "")
+        var eventName: String?
 
-            } else {
-                self.showNetworkErrorAlert()
-            }
-            self.networkIndicator.stopAnimating()
-
+        if event?.eventHomeTeam != nil && event?.eventAwayTeam != nil {
+            eventName = (event?.eventHomeTeam ?? "").appending(" VS ")
+                .appending(event?.eventAwayTeam ?? "")
+        } else {
+            eventName = (event?.eventFirstPlayer ?? "").appending(" VS ")
+                .appending(event?.eventSecondPlayer ?? "")
         }
-    }
-    func renderTeamsToView(result: TeamsResult?) {
-        DispatchQueue.main.async {
-            if result?.success == 1 {
-                self.teams = result?.result ?? []
-                self.collectionView.reloadData()
-                self.setLastSectionNumber()
-            }
-        }
-    }
-    func showNetworkErrorAlert() {
         let alert = UIAlertController(
-            title: "Something went wrong",
-            message: "Please check your internet connection",
-            preferredStyle: .alert)
+            title: eventName,
+            message: "set reminder for this event at \n \(date)",
+            preferredStyle: .actionSheet)
         alert.addAction(
             UIAlertAction(
-                title: "Ok", style: .default,
-                handler: { action in
-                    self.navigationController?.popViewController(animated: true)
+                title: "set reminder", style: .default,
+                handler: { _ in
+                    print("Delete item at \(indexPath)")
                 }))
-        self.present(alert, animated: true)
+
+        alert.addAction(
+            UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+
+        if let vc = collectionView.window?.rootViewController {
+            vc.present(alert, animated: true)
+        }
     }
-    func setLastSectionNumber(){
+
+    // MARK: - UICollectionViewDataSource section
+    func setLastSectionNumber() {
         var numberOfSections: Int = 0
-        if(!upCommingEvents.isEmpty){
-            numberOfSections+=1
+        if !upCommingEvents.isEmpty {
+            numberOfSections += 1
         }
-        if(!latestEvents.isEmpty){
-            numberOfSections+=1
+        if !latestEvents.isEmpty {
+            numberOfSections += 1
         }
-        if(!teams.isEmpty){
-            numberOfSections+=1
+        if !teams.isEmpty {
+            numberOfSections += 1
         }
         lastSection = numberOfSections - 1
     }
     func drawSection(index: Int) -> NSCollectionLayoutSection {
-
         switch index {
         case 0:
             return drawUpcommingEvents()
@@ -253,7 +294,6 @@ class FixturesCollectionViewController: UICollectionViewController,
             return drawLatestEvents()
         }
     }
-
     func drawUpcommingEvents() -> NSCollectionLayoutSection {
         let nib = UINib(nibName: "FootballEventCollectionViewCell", bundle: nil)
         self.collectionView.register(
@@ -293,7 +333,6 @@ class FixturesCollectionViewController: UICollectionViewController,
         return section
 
     }
-
     func drawEventsTeams() -> NSCollectionLayoutSection {
         let nib = UINib(nibName: "TeamCollectionViewCell", bundle: nil)
         self.collectionView.register(
@@ -333,7 +372,6 @@ class FixturesCollectionViewController: UICollectionViewController,
         return section
 
     }
-
     func drawLatestEvents() -> NSCollectionLayoutSection {
         let nib = UINib(nibName: "FootballEventCollectionViewCell", bundle: nil)
         self.collectionView.register(
@@ -371,14 +409,10 @@ class FixturesCollectionViewController: UICollectionViewController,
         return section
 
     }
-
-    // MARK: UICollectionViewDataSource
-
     override func numberOfSections(in collectionView: UICollectionView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return 3
     }
-
     override func collectionView(
         _ collectionView: UICollectionView, numberOfItemsInSection section: Int
     ) -> Int {
@@ -394,7 +428,6 @@ class FixturesCollectionViewController: UICollectionViewController,
             return 0
         }
     }
-
     override func collectionView(
         _ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
@@ -412,7 +445,6 @@ class FixturesCollectionViewController: UICollectionViewController,
 
         return cell!
     }
-
     func buildEventCell(indexPath: IndexPath) -> FootballEventCollectionViewCell
     {
         let cell =
@@ -484,7 +516,6 @@ class FixturesCollectionViewController: UICollectionViewController,
         return cell
 
     }
-
     func collectionView(
         _ collectionView: UICollectionView,
         layout collectionViewLayout: UICollectionViewLayout,
@@ -526,39 +557,5 @@ class FixturesCollectionViewController: UICollectionViewController,
             Router.goToTeamPage(from: self, team: team)
         }
     }
-
-    //    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-    //        return CGSize(width: collectionView.frame.width, height: 50)
-    //    }
-    // MARK: UICollectionViewDelegate
-
-    /*
-    // Uncomment this method to specify if the specified item should be highlighted during tracking
-    override func collectionView(_ collectionView: UICollectionView, shouldHighlightItemAt indexPath: IndexPath) -> Bool {
-        return true
-    }
-    */
-
-    /*
-    // Uncomment this method to specify if the specified item should be selected
-    override func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
-        return true
-    }
-    */
-
-    /*
-    // Uncomment these methods to specify if an action menu should be displayed for the specified item, and react to actions performed on the item
-    override func collectionView(_ collectionView: UICollectionView, shouldShowMenuForItemAt indexPath: IndexPath) -> Bool {
-        return false
-    }
-
-    override func collectionView(_ collectionView: UICollectionView, canPerformAction action: Selector, forItemAt indexPath: IndexPath, withSender sender: Any?) -> Bool {
-        return false
-    }
-
-    override func collectionView(_ collectionView: UICollectionView, performAction action: Selector, forItemAt indexPath: IndexPath, withSender sender: Any?) {
-
-    }
-    */
 
 }

@@ -7,7 +7,9 @@
 
 import UIKit
 
-class LeaguesTableViewController: UITableViewController, LeagueProtocol {
+class LeaguesTableViewController: UITableViewController, LeagueProtocol,
+    DataStateProtocol
+{
 
     var leagues: [League] = []
     let presenter = LeaguePresenter()
@@ -21,43 +23,49 @@ class LeaguesTableViewController: UITableViewController, LeagueProtocol {
         let nib = UINib(nibName: "LeagueTableViewCell", bundle: nil)
         self.tableView.register(
             nib, forCellReuseIdentifier: "LeagueTableViewCell")
-        setupNetworkProvider()
-        setupSearchController()
         self.navigationItem.title = sportType.rawValue
         presenter.attachView(view: self)
-        networkIndicator = UIActivityIndicatorView(style: .large)
-        networkIndicator.center = self.view.center
-        self.view.addSubview(networkIndicator)
-        networkIndicator.startAnimating()
-
+        setupNetworkProvider()
     }
+    
     override func viewWillAppear(_ animated: Bool) {
         navigationController?.setNavigationBarHidden(false, animated: true)
         self.navigationItem.title = "Leagues"
-
-        let gradientView = UIView(frame: self.view.bounds)
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.frame = gradientView.bounds
-        gradientLayer.colors = ThemeManager.gradientColors
-        gradientView.layer.insertSublayer(gradientLayer, at: 0)
-
-        tableView.backgroundView = gradientView
+        ThemeManager.addMainBackgroundToTable(at: self)
     }
 
     func setupNetworkProvider() {
+        networkIndicator = UIActivityIndicatorView(style: .large)
+        networkIndicator.center = self.view.center
+        self.view.addSubview(networkIndicator)
         if NetworkManager.instance.isConnectedToNetwork {
-            self.presenter.getDataFromAPI(
-                sportType: sportType, countryId: countryId)
+            self.networkRecoveredAction()
         } else {
-            self.showNetworkErrorAlert()
+            self.networkLostAction()
         }
         NetworkManager.instance.onNetworkRecovered = {
-            print("recovered")
+            self.networkRecoveredAction()
         }
         NetworkManager.instance.onNetworkLost = {
-            self.showNetworkErrorAlert()
+            self.networkLostAction()
         }
     }
+    
+    
+    func networkLostAction() {
+        self.filteredLeagues = []
+        self.tableView.reloadData()
+        ThemeManager.emptyState(at: self, message: "The internet connection appears to be offline", emptyStateType: .noInternetConnection)
+        self.networkIndicator.stopAnimating()
+        self.showNetworkErrorAlert()
+    }
+    func networkRecoveredAction() {
+        ThemeManager.removeEmptyState(from: self)
+        self.networkIndicator.startAnimating()
+        self.presenter.getDataFromAPI(
+            sportType: sportType, countryId: countryId)
+    }
+    
 
     func renderToView(result: LeagueResult?) {
         DispatchQueue.main.async {
@@ -65,12 +73,22 @@ class LeaguesTableViewController: UITableViewController, LeagueProtocol {
                 self.leagues = result?.result ?? []
                 self.filteredLeagues = self.leagues
                 self.tableView.reloadData()
-
+                self.setupSearchController()
             } else {
                 self.showNetworkErrorAlert()
             }
             self.networkIndicator.stopAnimating()
+        }
+    }
 
+    func checkDataState() {
+        if !self.leagues.isEmpty {
+            ThemeManager.removeEmptyState(from: self)
+        }
+        if self.leagues.isEmpty {
+            ThemeManager.emptyState(
+                at: self, message: "No matches available for this country",
+                emptyStateType: .emptyData)
         }
     }
 
@@ -82,9 +100,7 @@ class LeaguesTableViewController: UITableViewController, LeagueProtocol {
         alert.addAction(
             UIAlertAction(
                 title: "Ok", style: .default,
-                handler: { action in
-                    self.navigationController?.popViewController(animated: true)
-                }))
+                handler: nil))
         self.present(alert, animated: true)
     }
 
@@ -136,38 +152,6 @@ class LeaguesTableViewController: UITableViewController, LeagueProtocol {
             from: self, sportType: sportType,
             league: filteredLeagues[indexPath.row])
     }
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
-    }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }
 extension LeaguesTableViewController: UISearchResultsUpdating,
@@ -194,6 +178,7 @@ extension LeaguesTableViewController: UISearchResultsUpdating,
             isSearchActive = false
             filteredLeagues = leagues
             tableView.reloadData()
+            ThemeManager.removeEmptyState(from: self)
             return
         }
 
@@ -202,6 +187,14 @@ extension LeaguesTableViewController: UISearchResultsUpdating,
             $0.leagueName!.lowercased().contains(searchText.lowercased())
         }
         tableView.reloadData()
+
+        if filteredLeagues.isEmpty {
+            ThemeManager.emptyState(
+                at: self, message: "No Leagues found",
+                emptyStateType: .emptySearch)
+        } else {
+            ThemeManager.removeEmptyState(from: self)
+        }
     }
 
     // Handle cancel button press (optional)
@@ -209,5 +202,6 @@ extension LeaguesTableViewController: UISearchResultsUpdating,
         isSearchActive = false
         filteredLeagues = leagues
         tableView.reloadData()
+        ThemeManager.removeEmptyState(from: self)
     }
 }

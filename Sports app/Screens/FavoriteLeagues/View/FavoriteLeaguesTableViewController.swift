@@ -8,7 +8,8 @@
 import UIKit
 
 class FavoriteLeaguesViewController: UIViewController,
-    UITableViewDelegate, UITableViewDataSource, FavoriteLeagueProtocol
+    UITableViewDelegate, UITableViewDataSource, FavoriteLeagueProtocol,
+    DataStateProtocol
 {
 
     @IBOutlet weak var tableView: UITableView!
@@ -25,12 +26,8 @@ class FavoriteLeaguesViewController: UIViewController,
         let nib = UINib(nibName: "LeagueTableViewCell", bundle: nil)
         self.tableView.register(
             nib, forCellReuseIdentifier: "LeagueTableViewCell")
-        let layer = CAGradientLayer()
-        layer.frame = view.bounds
-        layer.colors = ThemeManager.gradientColors
-        view.layer.insertSublayer(layer, at: 0)
+        ThemeManager.addMainBackgroundToView(at: self)
         presenter.attachView(view: self)
-        //        setupSearchController()
     }
     override func viewWillAppear(_ animated: Bool) {
         presenter.getDataFromLocalDB()
@@ -42,14 +39,19 @@ class FavoriteLeaguesViewController: UIViewController,
             DispatchQueue.main.async {
                 self.leagues = result?.data ?? []
                 self.filteredLeagues = result?.data ?? []
-                if(!self.leagues.isEmpty){
-//                    self.view.layer.sublayers.
-                    self.tableView.reloadData()
-                }else{
-                    ThemeManager.emptyState(at: self)
-                }
-                
+                self.checkDataState()
             }
+        }
+    }
+    func checkDataState() {
+        if !self.leagues.isEmpty {
+            ThemeManager.removeEmptyState(from: self)
+            self.tableView.reloadData()
+        } else {
+            ThemeManager.emptyState(
+                at: self, message: "No favorites available",
+                emptyStateType: .emptyData)
+            self.tableView.reloadData()
         }
     }
     func showNetworkErrorAlert() {
@@ -117,19 +119,28 @@ class FavoriteLeaguesViewController: UIViewController,
             } ?? .football,
             league: filteredLeagues[indexPath.row])
     }
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-           if editingStyle == .delete {
-               removeFromFavorites(at: indexPath)
-           }
-       }
-    
+    func tableView(
+        _ tableView: UITableView,
+        commit editingStyle: UITableViewCell.EditingStyle,
+        forRowAt indexPath: IndexPath
+    ) {
+        if editingStyle == .delete {
+            removeFromFavorites(at: indexPath)
+        }
+    }
+
     func removeFromFavorites(at indexPath: IndexPath) {
         let item = filteredLeagues[indexPath.row]  // Replace `data` with your actual
-        let result = DBManager.shared.removeLeagueFromLocalDB(leagueKey: item.leaguekey!)
-        if (result != nil && result?.success == true) {
+        let result = DBManager.shared.removeLeagueFromLocalDB(
+            leagueKey: item.leaguekey!)
+        if result != nil && result?.success == true {
             filteredLeagues.remove(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .automatic)
-            
+            if filteredLeagues.isEmpty {
+                ThemeManager.emptyState(
+                    at: self, message: "No favorites available",
+                    emptyStateType: .emptyData)
+            }
         }
     }
 

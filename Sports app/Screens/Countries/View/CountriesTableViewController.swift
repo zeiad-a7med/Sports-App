@@ -19,57 +19,59 @@ class CountriesTableViewController: UITableViewController, CountryProtocol {
         super.viewDidLoad()
         let nib = UINib(nibName: "CountryTableViewCell", bundle: nil)
         self.tableView.register(nib, forCellReuseIdentifier: "CountryTableViewCell")
-        
-        setupNetworkProvider()
-        setupSearchController()
         presenter.attachView(view: self)
-        networkIndicator = UIActivityIndicatorView(style: .large)
-        networkIndicator.center = self.view.center
-        self.view.addSubview(networkIndicator)
-        networkIndicator.startAnimating()
-
+        setupNetworkProvider()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         navigationController?.setNavigationBarHidden(false, animated: true)
         self.navigationItem.title = sportType.rawValue.capitalized
-        
-        let gradientView = UIView(frame: self.view.bounds)
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.frame = gradientView.bounds
-        gradientLayer.colors = ThemeManager.gradientColors
-        gradientView.layer.insertSublayer(gradientLayer, at: 0)
-        
-        tableView.backgroundView = gradientView
+        ThemeManager.addMainBackgroundToTable(at: self)
     }
-
-
+    
+    
     func setupNetworkProvider() {
+        networkIndicator = UIActivityIndicatorView(style: .large)
+        networkIndicator.center = self.view.center
+        self.view.addSubview(networkIndicator)
+        
         if NetworkManager.instance.isConnectedToNetwork {
-            self.presenter.getDataFromAPI(sportType: sportType)
+            networkRecoveredAction()
         } else {
-            self.showNetworkErrorAlert()
+            self.networkLostAction()
         }
         NetworkManager.instance.onNetworkRecovered = {
-            print("recovered")
+            self.networkRecoveredAction()
         }
         NetworkManager.instance.onNetworkLost = {
-            self.showNetworkErrorAlert()
+            self.networkLostAction()
         }
     }
 
+    func networkLostAction() {
+        self.filteredcountries = []
+        self.tableView.reloadData()
+        ThemeManager.emptyState(at: self, message: "The internet connection appears to be offline", emptyStateType: .noInternetConnection)
+        self.networkIndicator.stopAnimating()
+        self.showNetworkErrorAlert()
+    }
+    func networkRecoveredAction() {
+        ThemeManager.removeEmptyState(from: self)
+        self.networkIndicator.startAnimating()
+        self.presenter.getDataFromAPI(sportType: self.sportType)
+    }
+    
     func renderToView(result: CountryResult?) {
         DispatchQueue.main.async {
             if result?.success == 1 {
                 self.countries = result?.result ?? []
                 self.filteredcountries = self.countries
+                self.setupSearchController()
                 self.tableView.reloadData()
-
             } else {
                 self.showNetworkErrorAlert()
             }
             self.networkIndicator.stopAnimating()
-
         }
     }
 
@@ -81,9 +83,7 @@ class CountriesTableViewController: UITableViewController, CountryProtocol {
         alert.addAction(
             UIAlertAction(
                 title: "Ok", style: .default,
-                handler: { action in
-                    self.navigationController?.popViewController(animated: true)
-                }))
+                handler: nil))
         self.present(alert, animated: true)
     }
 
@@ -132,51 +132,6 @@ class CountriesTableViewController: UITableViewController, CountryProtocol {
         return 120
     }
 
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
-    }
-    */
-
-    /*
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }
-    }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }
 extension CountriesTableViewController: UISearchResultsUpdating,
     UISearchBarDelegate
@@ -207,6 +162,7 @@ extension CountriesTableViewController: UISearchResultsUpdating,
             isSearchActive = false
             filteredcountries = countries
             tableView.reloadData()
+            ThemeManager.removeEmptyState(from: self)
             return
         }
 
@@ -215,6 +171,11 @@ extension CountriesTableViewController: UISearchResultsUpdating,
             $0.countryName!.lowercased().contains(searchText.lowercased())
         }
         tableView.reloadData()
+        if(filteredcountries.isEmpty){
+            ThemeManager.emptyState(at: self, message: "No countries found", emptyStateType: .emptySearch)
+        }else{
+            ThemeManager.removeEmptyState(from: self)
+        }
     }
 
     // Handle cancel button press (optional)
@@ -222,5 +183,6 @@ extension CountriesTableViewController: UISearchResultsUpdating,
         isSearchActive = false
         filteredcountries = countries
         tableView.reloadData()
+        ThemeManager.removeEmptyState(from: self)
     }
 }

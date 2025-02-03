@@ -9,7 +9,7 @@ import UIKit
 import Kingfisher
 
 class TeamDetailsCollectionViewController: UICollectionViewController ,UICollectionViewDelegateFlowLayout{
-    
+
     var team: Team?
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,27 +26,9 @@ class TeamDetailsCollectionViewController: UICollectionViewController ,UICollect
     override func viewWillAppear(_ animated: Bool) {
         self.navigationItem.title = team?.teamName
         navigationController?.setNavigationBarHidden(false, animated: true)
-        let gradientView = UIView(frame: self.view.bounds)
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.frame = gradientView.bounds
-        gradientLayer.colors = ThemeManager.gradientColors
-        gradientView.layer.insertSublayer(gradientLayer, at: 0)
-        self.collectionView.backgroundView = gradientView
+        ThemeManager.addMainBackgroundToCollectionView(at: self)
     }
     
-
-    
-    func showAlert(message : String , title : String) {
-        let alert = UIAlertController(
-            title: title,
-            message: message,
-            preferredStyle: .alert)
-        alert.addAction(
-            UIAlertAction(
-                title: "Ok", style: .default,
-                handler: nil))
-        self.present(alert, animated: true)
-    }
     func showNetworkErrorAlert() {
         let alert = UIAlertController(
             title: "Something went wrong",
@@ -67,6 +49,8 @@ class TeamDetailsCollectionViewController: UICollectionViewController ,UICollect
         case 0:
             return drawTeamHeaderSection()
         case 1:
+            return drawCouchesSection()
+        case 2:
             return drawPlayersSection()
         default:
             return drawPlayersSection()
@@ -101,7 +85,39 @@ class TeamDetailsCollectionViewController: UICollectionViewController ,UICollect
         return section
 
     }
+    func drawCouchesSection() -> NSCollectionLayoutSection {
+        
+        let nib = UINib(nibName: "TeamCollectionViewCell", bundle: nil)
+        self.collectionView.register(
+            nib, forCellWithReuseIdentifier: "TeamCollectionViewCell")
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(0.95),
+            heightDimension: .fractionalHeight(1))
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .absolute(220),
+            heightDimension: .absolute(220))
+        let group = NSCollectionLayoutGroup.horizontal(
+            layoutSize: groupSize, subitems: [item])
+        group.contentInsets = NSDirectionalEdgeInsets(
+            top: 0, leading: 0, bottom: 0, trailing: 0)
 
+        let section = NSCollectionLayoutSection(group: group)
+        section.contentInsets = NSDirectionalEdgeInsets(
+            top: 10, leading: 5, bottom: 16, trailing: 5)
+        if((team?.coaches?.isEmpty) != nil){
+            let headerSize = NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(1), heightDimension: .absolute(40))
+            let header = NSCollectionLayoutBoundarySupplementaryItem(
+                layoutSize: headerSize,
+                elementKind: UICollectionView.elementKindSectionHeader,
+                alignment: .top
+            )
+            section.boundarySupplementaryItems = [header]
+        }
+        return section
+
+    }
     func drawPlayersSection() -> NSCollectionLayoutSection {
         let nib = UINib(nibName: "PlayerCardCollectionViewCell", bundle: nil)
         self.collectionView.register(
@@ -142,7 +158,7 @@ class TeamDetailsCollectionViewController: UICollectionViewController ,UICollect
 
     override func numberOfSections(in collectionView: UICollectionView) -> Int {
         // #warning Incomplete implementation, return the number of sections
-        return 2
+        return 3
     }
 
     override func collectionView(
@@ -153,6 +169,8 @@ class TeamDetailsCollectionViewController: UICollectionViewController ,UICollect
         case 0:
             return 1
         case 1:
+            return team?.coaches?.count ?? 0
+        case 2:
             return team?.players?.count ?? 0
         default:
             return 0
@@ -167,6 +185,8 @@ class TeamDetailsCollectionViewController: UICollectionViewController ,UICollect
         case 0:
             cell = buildTeamHeaderCell(indexPath: indexPath)
         case 1:
+            cell = buildCoacheCell(indexPath: indexPath)
+        case 2:
             cell = buildPlayerCell(indexPath: indexPath)
         default:
             cell = buildPlayerCell(indexPath: indexPath)
@@ -190,6 +210,16 @@ class TeamDetailsCollectionViewController: UICollectionViewController ,UICollect
             cell.teamLogo.image = UIImage(named: SportType.football.rawValue)
         }
         cell.teamName.text = team?.teamName
+        return cell
+
+    }
+    func buildCoacheCell(indexPath: IndexPath) -> TeamCollectionViewCell {
+        let cell =
+            collectionView.dequeueReusableCell(
+                withReuseIdentifier: "TeamCollectionViewCell", for: indexPath)
+            as! TeamCollectionViewCell
+        cell.teamLogo.image = UIImage(named: SportType.football.rawValue)
+        cell.teamName.text = team?.coaches?[indexPath.row].coachName
         return cell
 
     }
@@ -230,9 +260,9 @@ class TeamDetailsCollectionViewController: UICollectionViewController ,UICollect
         _ collectionView: UICollectionView,
         viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath
     ) -> UICollectionReusableView {
-        guard kind == UICollectionView.elementKindSectionHeader else {
-            return UICollectionReusableView()
-        }
+//        guard kind == UICollectionView.elementKindSectionHeader else {
+//            return UICollectionReusableView()
+//        }
 
         let header =
             collectionView.dequeueReusableSupplementaryView(
@@ -240,7 +270,10 @@ class TeamDetailsCollectionViewController: UICollectionViewController ,UICollect
             as! HeaderView
         var title: String = ""
         switch indexPath.section {
+            
         case 1:
+            title = "Coaches"
+        case 2:
             title = "Players"
         default:
             break

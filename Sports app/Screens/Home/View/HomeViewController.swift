@@ -21,13 +21,7 @@ class HomeViewController: UIViewController, UICollectionViewDelegate,
         let nib = UINib(nibName: "SportCard", bundle: nil)
         self.myCollectionView.register(
             nib, forCellWithReuseIdentifier: "SportCard")
-        
-        let layer = CAGradientLayer()
-        layer.frame = view.bounds
-        layer.colors = ThemeManager.gradientColors
-        view.layer.insertSublayer(layer, at: 0)
-        
-        
+        ThemeManager.addMainBackgroundToView(at: self)
     }
 
 
