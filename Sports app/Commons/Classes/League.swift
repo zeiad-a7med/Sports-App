@@ -7,7 +7,7 @@
 
 import Foundation
 import CoreData
-struct League : Decodable{
+struct League : Codable{
     var leaguekey:Int?
     var countrykey:Int?
     var countryName:String?

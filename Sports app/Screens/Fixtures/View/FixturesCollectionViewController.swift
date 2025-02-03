@@ -172,7 +172,8 @@ class FixturesCollectionViewController: UICollectionViewController,
         scrollButton.tintColor = .white  // Ensure the arrow is visible
         scrollButton.translatesAutoresizingMaskIntoConstraints = false
         scrollButton.layer.cornerRadius = 25
-        scrollButton.backgroundColor = UIColor(red: 24/255, green: 184/255, blue: 154/255, alpha: 1)
+        scrollButton.backgroundColor = UIColor(
+            red: 24 / 255, green: 184 / 255, blue: 154 / 255, alpha: 1)
         scrollButton.addTarget(
             self, action: #selector(scrollToLastSection), for: .touchUpInside)
         view.addSubview(scrollButton)
@@ -195,7 +196,8 @@ class FixturesCollectionViewController: UICollectionViewController,
             row = latestEvents.count - 1
         }
         collectionView.scrollToItem(
-            at: IndexPath(row: row, section: section), at: .bottom, animated: true
+            at: IndexPath(row: row, section: section), at: .bottom,
+            animated: true
         )
     }
     @objc func favoriteTapped() {
@@ -259,7 +261,11 @@ class FixturesCollectionViewController: UICollectionViewController,
             UIAlertAction(
                 title: "set reminder", style: .default,
                 handler: { _ in
-                    print("Delete item at \(indexPath)")
+                    LocalNotificationManager.instance.addNotification(
+                        title: eventName ?? "",
+                        body: "Reminding for event \(eventName ?? "")",
+                        badgeNumber: 1, date: Date().addingTimeInterval(10),
+                        league: self.league, sportType: self.sportType)
                 }))
 
         alert.addAction(

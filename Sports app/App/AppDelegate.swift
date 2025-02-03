@@ -5,26 +5,42 @@
 //  Created by Zeiad on 28/01/2025.
 //
 
-import UIKit
 import CoreData
+import UIKit
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate,
+    UNUserNotificationCenterDelegate
+{
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication
+            .LaunchOptionsKey: Any]?
+    ) -> Bool {
         // Override point for customization after application launch.
+        LocalNotificationManager.instance.userNotificationCenter.delegate = self
         return true
     }
 
     // MARK: UISceneSession Lifecycle
 
-    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+    func application(
+        _ application: UIApplication,
+        configurationForConnecting connectingSceneSession: UISceneSession,
+        options: UIScene.ConnectionOptions
+    ) -> UISceneConfiguration {
         // Called when a new scene session is being created.
         // Use this method to select a configuration to create the new scene with.
-        return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
+        return UISceneConfiguration(
+            name: "Default Configuration",
+            sessionRole: connectingSceneSession.role)
     }
 
-    func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
+    func application(
+        _ application: UIApplication,
+        didDiscardSceneSessions sceneSessions: Set<UISceneSession>
+    ) {
         // Called when the user discards a scene session.
         // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
@@ -40,11 +56,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
          error conditions that could cause the creation of the store to fail.
         */
         let container = NSPersistentContainer(name: "Sports_app")
-        container.loadPersistentStores(completionHandler: { (storeDescription, error) in
+        container.loadPersistentStores(completionHandler: {
+            (storeDescription, error) in
             if let error = error as NSError? {
                 // Replace this implementation with code to handle the error appropriately.
                 // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                 
+
                 /*
                  Typical reasons for an error here include:
                  * The parent directory does not exist, cannot be created, or disallows writing.
@@ -61,7 +78,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // MARK: - Core Data Saving support
 
-    func saveContext () {
+    func saveContext() {
         let context = persistentContainer.viewContext
         if context.hasChanges {
             do {
@@ -74,6 +91,49 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
     }
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        if let navigateTo = response.notification.request.content.userInfo[
+            "navigateTo"] as? String,
+            navigateTo == RouteString.FixturesPage
+        {
+            var league : League?
+            var sportType : SportType?
+            
+            if let leagueJSON = response.notification.request.content.userInfo["league"] as? String,
+               let leagueData = leagueJSON.data(using: .utf8) {
+                league = try? JSONDecoder().decode(League.self, from: leagueData)
+            }
+            if let sportTypeJSON = response.notification.request.content.userInfo["sportType"] as? String,
+               let sportTypeData = sportTypeJSON.data(using: .utf8) {
+                sportType = try? JSONDecoder().decode(SportType.self, from: sportTypeData)
+            }
+            let vc = getRootViewController()
+            if(league != nil && sportType != nil && vc != nil){
+                Router.goToFixturesPage(from: vc!,sportType: sportType!,league: league!)
+            }
+        }
+        completionHandler()
+    }
+    func getRootViewController() -> UIViewController? {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = windowScene.windows.first else {
+            return nil
+        }
+        return window.rootViewController
+    }
 
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (
+            UNNotificationPresentationOptions
+        ) -> Void
+    ) {
+        // Specify how you want the notification to be displayed in the foreground
+        completionHandler([.banner, .sound, .badge])
+    }
 }
-
