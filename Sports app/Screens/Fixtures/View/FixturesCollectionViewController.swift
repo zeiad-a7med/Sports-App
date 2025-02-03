@@ -206,11 +206,11 @@ class FixturesCollectionViewController: UICollectionViewController,
         if isFavorite {
             league.sportType = sportType.rawValue
             let result = DBManager.shared.addLeagueToLocalDB(league: league)
-            showAlert(message: result?.message ?? "", title: "")
+            showAlert(message: "", title: result?.message ?? "")
         } else {
             let result = DBManager.shared.removeLeagueFromLocalDB(
                 leagueKey: league.leaguekey!)
-            showAlert(message: result?.message ?? "", title: "")
+            showAlert(message: "", title: result?.message ?? "")
         }
         updateFavoriteButton()
     }
@@ -560,7 +560,8 @@ class FixturesCollectionViewController: UICollectionViewController,
     ) {
         if indexPath.section == 2 {
             let team = teams[indexPath.row]
-            Router.goToTeamPage(from: self, team: team)
+            Router.goToTeamPage(
+                from: self, team: team, sprtType: self.sportType)
         }
     }
 

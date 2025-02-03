@@ -5,12 +5,15 @@
 //  Created by Zeiad on 02/02/2025.
 //
 
-import UIKit
 import Kingfisher
+import UIKit
 
-class TeamDetailsCollectionViewController: UICollectionViewController ,UICollectionViewDelegateFlowLayout{
+class TeamDetailsCollectionViewController: UICollectionViewController,
+    UICollectionViewDelegateFlowLayout
+{
 
     var team: Team?
+    var sportype: SportType?
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionView.register(
@@ -28,7 +31,7 @@ class TeamDetailsCollectionViewController: UICollectionViewController ,UICollect
         navigationController?.setNavigationBarHidden(false, animated: true)
         ThemeManager.addMainBackgroundToCollectionView(at: self)
     }
-    
+
     func showNetworkErrorAlert() {
         let alert = UIAlertController(
             title: "Something went wrong",
@@ -58,11 +61,11 @@ class TeamDetailsCollectionViewController: UICollectionViewController ,UICollect
     }
 
     func drawTeamHeaderSection() -> NSCollectionLayoutSection {
-        
+
         let nib = UINib(nibName: "TeamCollectionViewCell", bundle: nil)
         self.collectionView.register(
             nib, forCellWithReuseIdentifier: "TeamCollectionViewCell")
-        
+
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(0.95),
             heightDimension: .fractionalHeight(1))
@@ -74,7 +77,6 @@ class TeamDetailsCollectionViewController: UICollectionViewController ,UICollect
         let group = NSCollectionLayoutGroup.horizontal(
             layoutSize: groupSize, subitems: [item])
 
-        
         group.contentInsets = NSDirectionalEdgeInsets(
             top: 0, leading: 0, bottom: 0, trailing: 0)
 
@@ -86,7 +88,7 @@ class TeamDetailsCollectionViewController: UICollectionViewController ,UICollect
 
     }
     func drawCouchesSection() -> NSCollectionLayoutSection {
-        
+
         let nib = UINib(nibName: "TeamCollectionViewCell", bundle: nil)
         self.collectionView.register(
             nib, forCellWithReuseIdentifier: "TeamCollectionViewCell")
@@ -105,9 +107,10 @@ class TeamDetailsCollectionViewController: UICollectionViewController ,UICollect
         let section = NSCollectionLayoutSection(group: group)
         section.contentInsets = NSDirectionalEdgeInsets(
             top: 10, leading: 5, bottom: 16, trailing: 5)
-        if((team?.coaches?.isEmpty) != nil){
+        if (team?.coaches?.isEmpty) != nil {
             let headerSize = NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(1), heightDimension: .absolute(40))
+                widthDimension: .fractionalWidth(1),
+                heightDimension: .absolute(40))
             let header = NSCollectionLayoutBoundarySupplementaryItem(
                 layoutSize: headerSize,
                 elementKind: UICollectionView.elementKindSectionHeader,
@@ -140,9 +143,10 @@ class TeamDetailsCollectionViewController: UICollectionViewController ,UICollect
 
         section.contentInsets = NSDirectionalEdgeInsets(
             top: 10, leading: 20, bottom: 10, trailing: 20)
-        if((team?.players?.isEmpty) != nil){
+        if (team?.players?.isEmpty) != nil {
             let headerSize = NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(1), heightDimension: .absolute(40))
+                widthDimension: .fractionalWidth(1),
+                heightDimension: .absolute(40))
             let header = NSCollectionLayoutBoundarySupplementaryItem(
                 layoutSize: headerSize,
                 elementKind: UICollectionView.elementKindSectionHeader,
@@ -152,7 +156,6 @@ class TeamDetailsCollectionViewController: UICollectionViewController ,UICollect
         }
         return section
     }
-
 
     // MARK: UICollectionViewDataSource
 
@@ -204,7 +207,8 @@ class TeamDetailsCollectionViewController: UICollectionViewController ,UICollect
             if let imageUrl = URL(string: team!.teamLogo!) {
                 cell.teamLogo.kf.setImage(with: imageUrl)
             } else {
-                cell.teamLogo.image = UIImage(named: SportType.football.rawValue)
+                cell.teamLogo.image = UIImage(
+                    named: SportType.football.rawValue)
             }
         } else {
             cell.teamLogo.image = UIImage(named: SportType.football.rawValue)
@@ -224,25 +228,36 @@ class TeamDetailsCollectionViewController: UICollectionViewController ,UICollect
 
     }
     func buildPlayerCell(indexPath: IndexPath) -> PlayerCardCollectionViewCell {
-       
+
         let cell =
             collectionView.dequeueReusableCell(
-                withReuseIdentifier: "PlayerCardCollectionViewCell", for: indexPath)
+                withReuseIdentifier: "PlayerCardCollectionViewCell",
+                for: indexPath)
             as! PlayerCardCollectionViewCell
-        
+
         let player = team?.players?[indexPath.row]
-        
+
         if player?.playerImage != nil {
             if let imageUrl = URL(string: player!.playerImage!) {
-                cell.playerImage.kf.setImage(with: imageUrl)
+                cell.playerImage.kf.setImage(
+                    with: imageUrl,
+                    placeholder: UIImage(
+                        named: self.sportype?.rawValue
+                            ?? SportType.football.rawValue)
+                )
+
             } else {
-                cell.playerImage.image = UIImage(named: SportType.football.rawValue)
+                cell.playerImage.image = UIImage(
+                    named: self.sportype?.rawValue
+                        ?? SportType.football.rawValue)
             }
         } else {
-            cell.playerImage.image = UIImage(named: SportType.football.rawValue)
+            cell.playerImage.image = UIImage(
+                named: self.sportype?.rawValue ?? SportType.football.rawValue)
         }
         cell.playerName.text = player?.playerName
-        cell.playerAge.text = ((player?.playerAge) != nil) ? "" : "\(player!.playerAge!) years"
+        cell.playerAge.text =
+            ((player?.playerAge) != nil) ? "" : "\(player!.playerAge!) years"
         cell.playerType.text = player?.playerType
         cell.playerNumber.text = player?.playerNumber
         return cell
@@ -260,9 +275,9 @@ class TeamDetailsCollectionViewController: UICollectionViewController ,UICollect
         _ collectionView: UICollectionView,
         viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath
     ) -> UICollectionReusableView {
-//        guard kind == UICollectionView.elementKindSectionHeader else {
-//            return UICollectionReusableView()
-//        }
+        guard kind == UICollectionView.elementKindSectionHeader else {
+            return UICollectionReusableView()
+        }
 
         let header =
             collectionView.dequeueReusableSupplementaryView(
@@ -270,7 +285,7 @@ class TeamDetailsCollectionViewController: UICollectionViewController ,UICollect
             as! HeaderView
         var title: String = ""
         switch indexPath.section {
-            
+
         case 1:
             title = "Coaches"
         case 2:

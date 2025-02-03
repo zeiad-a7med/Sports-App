@@ -50,13 +50,14 @@ class Router {
     }
     
     static func goToTeamPage(
-        from: UIViewController, team: Team
+        from: UIViewController, team: Team , sprtType: SportType
     ) {
         let vc =
             from.storyboard?.instantiateViewController(
                 identifier: RouteString.teamPage)
         as! TeamDetailsCollectionViewController
         vc.team = team
+        vc.sportype = sprtType
         from.navigationController?.pushViewController(vc, animated: true)
     }
     

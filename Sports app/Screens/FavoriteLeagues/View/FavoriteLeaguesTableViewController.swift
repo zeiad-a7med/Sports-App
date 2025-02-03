@@ -54,19 +54,6 @@ class FavoriteLeaguesViewController: UIViewController,
             self.tableView.reloadData()
         }
     }
-    func showNetworkErrorAlert() {
-        let alert = UIAlertController(
-            title: "Something went wrong",
-            message: "Please check your internet connection",
-            preferredStyle: .alert)
-        alert.addAction(
-            UIAlertAction(
-                title: "Ok", style: .default,
-                handler: { action in
-                    self.navigationController?.popViewController(animated: true)
-                }))
-        self.present(alert, animated: true)
-    }
 
     // MARK: - Table view data source
 
@@ -125,11 +112,27 @@ class FavoriteLeaguesViewController: UIViewController,
         forRowAt indexPath: IndexPath
     ) {
         if editingStyle == .delete {
-            removeFromFavorites(at: indexPath)
+            let alert = UIAlertController(
+                title: "Are you sure you want to delete \n\(filteredLeagues[indexPath.row].leagueName!)\n from your favorites?",
+                message: "",
+                preferredStyle: .actionSheet)
+            alert.addAction(
+                UIAlertAction(
+                    title: "Delete", style: .destructive,
+                    handler: { _ in
+                        self.removeFromFavorites(at: indexPath)
+                    }))
+            alert.addAction(
+                UIAlertAction(
+                    title: "Cancel", style: .default,
+                    handler: nil))
+            self.present(alert, animated: true)
+            
         }
     }
 
     func removeFromFavorites(at indexPath: IndexPath) {
+        
         let item = filteredLeagues[indexPath.row]  // Replace `data` with your actual
         let result = DBManager.shared.removeLeagueFromLocalDB(
             leagueKey: item.leaguekey!)
