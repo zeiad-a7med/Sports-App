@@ -7,6 +7,6 @@
 
 protocol FavoriteLeagueLocalServiceProtocol {
     static func fetchLeaguesFromLocalDB(
-        completionHandler: @escaping (LocalDBResponse?) -> Void
+        completionHandler: @escaping (LocalDBResponse) -> Void
     )
 }

@@ -8,7 +8,7 @@
 import Foundation
 
 class FovoriteLeagueLocalServices: FavoriteLeagueLocalServiceProtocol {
-    static func fetchLeaguesFromLocalDB(completionHandler: @escaping (LocalDBResponse?) -> Void) {
+    static func fetchLeaguesFromLocalDB(completionHandler: @escaping (LocalDBResponse) -> Void) {
         let response = DBManager.shared.getFavoriteLeaguesFromLocalDB()
         completionHandler(response)
     }

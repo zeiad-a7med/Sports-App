@@ -14,7 +14,7 @@ protocol NetworkManagerProtocol {
 
 class NetworkManager {
     var reachability : Reachability!
-    static let instance = NetworkManager()
+    static var instance = NetworkManager()
     var onNetworkRecovered : (()->()) = {}
     var onNetworkLost : (()->()) = {}
     var isConnectedToNetwork : Bool{
@@ -48,6 +48,9 @@ class NetworkManager {
         } catch {
             print("Unable to start notifier")
         }
+    }
+    static func resetInstance() {
+        instance = NetworkManager()
     }
     
 }
